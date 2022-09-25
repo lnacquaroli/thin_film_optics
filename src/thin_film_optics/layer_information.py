@@ -11,6 +11,8 @@ import numpy as np
 
 from helpers.utils import _neg_eps_finfo
 
+
+# Constants
 NEG_EPS = _neg_eps_finfo()
 
 
@@ -19,7 +21,7 @@ def tmmo_layer(
     index_refraction : Any,
     thickness : Any = np.nan,
     layer_type : str = "GT",
-    n_wavelength : Any = NEG_EPS,
+    n_wavelength_0 : Any = NEG_EPS,
 ) -> NamedTuple:
     """Builds a layer structure to be simulated.
 
@@ -34,7 +36,7 @@ def tmmo_layer(
             index_refraction
             thickness
             layer_type
-            n_wavelength
+            n_wavelength_0
     """
     if isinstance(index_refraction, (complex, float, int)):
         index_refraction = np.array(index_refraction)
@@ -44,7 +46,7 @@ def tmmo_layer(
             "index_refraction",
             "thickness",
             "layer_type",
-            "n_wavelength",
+            "n_wavelength_0",
         ]
     )
 
@@ -52,7 +54,7 @@ def tmmo_layer(
         index_refraction,
         thickness,
         layer_type,
-        n_wavelength,
+        n_wavelength_0,
     )
 
 # class TmmoLayer(NamedTuple):

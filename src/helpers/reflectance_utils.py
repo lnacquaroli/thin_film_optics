@@ -1,12 +1,12 @@
 """Collection of functions to deal with the reflectance.
 """
 
-from typing import Any
+from typing import Any, NamedTuple, Tuple, List
 import numpy as np
 
 from effective_index_models import looyenga, inverse_looyenga
 from refractive_index_db import silicon
-from thin_film_optics.transfer_matrix_method import transfer_matrix_spectra
+from thin_film_optics.transfer_matrix_method import TMMOptics
 
 
 FOURPI = 4.0*np.pi
@@ -166,39 +166,34 @@ def normalize_experimental_reflectance(
 
 
 def reflectance_layered(
-    n_layers: Any,
-    d_vec: Any,
-    beam: Any,
-) -> Any:
+    layers: List[NamedTuple],
+    beam: NamedTuple,
+) -> Tuple[Any, Any, Any]:
     """Returns the reflectance of a n_layers structure for a given beam structure.
 
     Args:
-        n_layers (ndarray): 2d array with the structure of indices of refraction of each layer per column that compose the system as a function of wavelengths.
-        d_vec (ndarray): thicknesses of each layer.
-        beam (namedtuple): structure with the beam parameters.
+        beam (NamedTuple): beam parameters build with beam_parameters function.
+        layers (List[NamedTuple]): list of tmmo_layer for each layer in the system.
 
     Returns:
         (ndarray): reflectance of the input structure.
     """
-    R = np.empty(len(beam.wavelength))
-    for i, l in enumerate(beam.wavelength):
-        R[i] = transfer_matrix_spectra(
-            n_layers[i, :],
-            d_vec,
-            l,
-            beam.angle_inc_radians,
-            beam.polarisation,
-        )
-    return R
+    tmm_optics = TMMOptics(beam = beam, layers = layers)
+    tmm_optics.tmm_spectra()
+    return (
+        tmm_optics._spectra.reflectance_p,
+        tmm_optics._spectra.reflectance_s,
+        tmm_optics._spectra.reflectance,
+    )
 
 
 def phase_shift(
-    constant: Any,
-    thickness: Any,
-    index_refraction: Any,
-    cos_angle_inc: Any,
-    wavelength: Any,
-) -> Any:
+    constant: float,
+    thickness: float,
+    index_refraction: complex,
+    cos_angle_inc: complex,
+    wavelength: float,
+) -> complex:
     """Calculates the phase shift.
 
     Args:
@@ -212,3 +207,32 @@ def phase_shift(
         (ndarray): phase shift.
     """
     return constant*thickness*index_refraction*cos_angle_inc/wavelength
+
+def admittance_p(index_refraction: Any, cosangle: Any) -> Any:
+    """Admittance of p-wave.
+
+    Args:
+        index_refraction (ndarray, complex): index of refraction
+        cosangle (ndarray, complex): cosine of angle of incidence
+
+    Returns:
+        adm_p (ndarray, complex): admittance of p-wave
+    """
+    _check_admittance_angle_index_array(index_refraction, cosangle)
+    return index_refraction/cosangle
+
+def admittance_s(index_refraction: Any, cosangle: Any) -> Any:
+    """Admittance of s-wave.
+
+    Args:
+        index_refraction (ndarray, complex): index of refraction
+        cosangle (ndarray, complex): cosine of angle of incidence
+
+    Returns:
+        adm_s (ndarray, complex): admittance of s-wave
+    """
+    _check_admittance_angle_index_array(index_refraction, cosangle)
+    return index_refraction*cosangle
+
+def _check_admittance_angle_index_array(n: Any, a: Any) -> Any:
+    assert len(n) == len(a), "index of refraction and angle lengths must match"

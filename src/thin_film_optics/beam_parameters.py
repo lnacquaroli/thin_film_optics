@@ -45,7 +45,8 @@ def beam_parameters(
     wavelength_0_, wavelength_0_index_ = _check_wavelength_0(wavelength_, wavelength_0)
 
     BeamParameters = namedtuple(
-        "BeamParameters", [
+        "BeamParameters",
+        [
             "wavelength",
             "angle_inc_degrees",
             "angle_inc_radians",
