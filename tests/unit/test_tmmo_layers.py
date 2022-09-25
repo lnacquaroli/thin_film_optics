@@ -1,8 +1,6 @@
 """Module that tests the tmmo_layer namedtuple.
 """
 
-from email.policy import compat32
-from operator import index
 import numpy as np
 
 from thin_film_optics.layer_information import tmmo_layer
@@ -17,7 +15,7 @@ def test_tmmo_layer_scalar_index_refraction():
     assert layer.index_refraction == index_refraction
     assert np.isnan(layer.thickness)
     assert layer.layer_type == "GT"
-    assert np.allclose(layer.n_wavelength, -np.finfo(float).eps)
+    assert np.allclose(layer.n_wavelength_0, -np.finfo(float).eps)
 
 
 def test_tmmo_layer_array_index_refraction():
@@ -29,7 +27,7 @@ def test_tmmo_layer_array_index_refraction():
     assert np.allclose(layer.index_refraction, index_refraction)
     assert np.isnan(layer.thickness)
     assert layer.layer_type == "GT"
-    assert np.allclose(layer.n_wavelength, -np.finfo(float).eps)
+    assert np.allclose(layer.n_wavelength_0, -np.finfo(float).eps)
 
 
 def test_tmmo_layer_list_index_refraction():
@@ -41,7 +39,7 @@ def test_tmmo_layer_list_index_refraction():
     assert layer.index_refraction == index_refraction
     assert np.isnan(layer.thickness)
     assert layer.layer_type == "GT"
-    assert np.allclose(layer.n_wavelength, -np.finfo(float).eps)
+    assert np.allclose(layer.n_wavelength_0, -np.finfo(float).eps)
 
 
 def test_tmmo_layer_array_complex_index_refraction():
@@ -53,7 +51,7 @@ def test_tmmo_layer_array_complex_index_refraction():
     assert np.allclose(layer.index_refraction, index_refraction)
     assert np.isnan(layer.thickness)
     assert layer.layer_type == "GT"
-    assert np.allclose(layer.n_wavelength, -np.finfo(float).eps)
+    assert np.allclose(layer.n_wavelength_0, -np.finfo(float).eps)
 
 
 def test_tmmo_layer_thickness():
@@ -69,7 +67,7 @@ def test_tmmo_layer_thickness():
     assert np.allclose(layer.index_refraction, index_refraction)
     assert layer.thickness == thickness
     assert layer.layer_type == "GT"
-    assert np.allclose(layer.n_wavelength, -np.finfo(float).eps)
+    assert np.allclose(layer.n_wavelength_0, -np.finfo(float).eps)
 
 
 def test_tmmo_layer_layer_type():
@@ -84,7 +82,7 @@ def test_tmmo_layer_layer_type():
     assert np.allclose(layer.index_refraction, index_refraction)
     assert np.isnan(layer.thickness)
     assert layer.layer_type == "OT"
-    assert np.allclose(layer.n_wavelength, -np.finfo(float).eps)
+    assert np.allclose(layer.n_wavelength_0, -np.finfo(float).eps)
 
 
 def test_tmmo_layer_n_wavelength_0_scalar():
@@ -94,13 +92,13 @@ def test_tmmo_layer_n_wavelength_0_scalar():
     n_wavelength_0 = 2.5
     layer = tmmo_layer(
         index_refraction = index_refraction,
-        n_wavelength = n_wavelength_0,
+        n_wavelength_0 = n_wavelength_0,
     )
 
     assert np.allclose(layer.index_refraction, index_refraction)
     assert np.isnan(layer.thickness)
     assert layer.layer_type == "GT"
-    assert np.allclose(layer.n_wavelength, n_wavelength_0)
+    assert np.allclose(layer.n_wavelength_0, n_wavelength_0)
 
 
 def test_tmmo_layer_n_wavelength_0_array():
@@ -110,13 +108,13 @@ def test_tmmo_layer_n_wavelength_0_array():
     n_wavelength_0 = np.array([2.5])
     layer = tmmo_layer(
         index_refraction = index_refraction,
-        n_wavelength = n_wavelength_0,
+        n_wavelength_0 = n_wavelength_0,
     )
 
     assert np.allclose(layer.index_refraction, index_refraction)
     assert np.isnan(layer.thickness)
     assert layer.layer_type == "GT"
-    assert np.allclose(layer.n_wavelength, n_wavelength_0)
+    assert np.allclose(layer.n_wavelength_0, n_wavelength_0)
 
 
 def test_tmmo_layer_n_wavelength_0_array_complex():
@@ -126,10 +124,21 @@ def test_tmmo_layer_n_wavelength_0_array_complex():
     n_wavelength_0 = np.array([2.5], dtype = complex)
     layer = tmmo_layer(
         index_refraction = index_refraction,
-        n_wavelength = n_wavelength_0,
+        n_wavelength_0 = n_wavelength_0,
     )
 
     assert np.allclose(layer.index_refraction, index_refraction)
     assert np.isnan(layer.thickness)
     assert layer.layer_type == "GT"
-    assert np.allclose(layer.n_wavelength, n_wavelength_0)
+    assert np.allclose(layer.n_wavelength_0, n_wavelength_0)
+
+def test_tmm_optics_layers_list_length():
+    silicon = np.array([3.4, 3.4, 3.4, 3.4, 3.4], dtype = complex)
+    glass = np.array([1.5, 1.5, 1.5, 1.5, 1.5], dtype = complex)
+    air = np.array([1.0, 1.0, 1.0, 1.0, 1.0], dtype = complex)
+    layers = [
+        tmmo_layer(index_refraction = air),
+        tmmo_layer(index_refraction = glass),
+        tmmo_layer(index_refraction = silicon),
+    ]
+    assert len(layers) == 3
