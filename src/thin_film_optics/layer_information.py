@@ -56,10 +56,3 @@ def tmmo_layer(
         layer_type,
         n_wavelength_0,
     )
-
-# class TmmoLayer(NamedTuple):
-#     index_refraction : Any
-#     thickness: Any = np.nan
-#     layer_type: str = "GT"
-#     n_wavelength: Any = NEG_EPS
-

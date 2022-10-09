@@ -13,9 +13,9 @@ from helpers.reflectance_utils import snell_cosine_law
 from helpers.reflectance_utils import phase_shift
 from helpers.reflectance_utils import admittance_p, admittance_s
 
-from helpers.utils import find_closest, _neg_eps_finfo
-#from .beam_parameters import beam_parameters
-#from .layer_information import tmmo_layer
+from helpers.utils import _neg_eps_finfo
+#from beam_parameters import beam_parameters
+#from layer_information import tmmo_layer
 
 
 logger = logging.getLogger(__name__)
@@ -88,7 +88,7 @@ class TMMOptics():
 
         for i, x in enumerate(self._layers):
             # n_wavelength_0 depending on the input
-            if x.n_wavelength_0 == NEG_EPS: # not specified
+            if np.allclose(x.n_wavelength_0, NEG_EPS): # not specified
                 n_wavelength_0[i] = np.real(
                     x.index_refraction[self._beam.wavelength_0_index],
                 )
@@ -210,16 +210,21 @@ class TMMOptics():
         I: Any,
         n: Any,
     ) -> Tuple[Any, Any, Any, Any, Any]:
+
         numlay = len(self._layers)
         n[0] = self._layers[0].index_refraction[l]
+
         for c in range(1, numlay):
             n[c] = self._layers[c].index_refraction[l]
+
             # compute angles inside each layer according to the Snell law
             cosphi[c] = snell_cosine_law(n[c - 1], n[c], cosphi[c - 1])
+
         # phase shifts for each layer: 2*pi = 6.283185307179586
         delta = phase_shift(
             TWOPI, n, self._physical_thickness, cosphi, wavelen,
         ).reshape(-1)
+
         adm_s, adm_p = admittance_s(n, cosphi), admittance_p(n, cosphi)
 
         Ms = self._total_transfer_matrix(I, delta, adm_s)
@@ -305,12 +310,27 @@ class TMMOptics():
             ts: complex transmission coefficient s-wave
             tp: complex transmission coefficient p-wave
         """
-        b, c, d = Ms[1,0]/adm_s_0, Ms[0,1]*adm_s_m, Ms[1,1]*adm_s_m/adm_s_0
-        rs = (Ms[0,0] - b + c - d)/(Ms[0,0] + b + c + d)
-        b, c, d = Mp[1,0]/adm_p_0, Mp[0,1]*adm_p_m, Mp[1,1]*adm_p_m/adm_p_0
-        rp = (Mp[0,0] - b + c - d)/(Mp[0,0] + b + c + d)
-        ts = 2.0/(adm_s_0*Ms[0,0] + Ms[1, 0] + adm_s_0*adm_s_m*Ms[0, 1] + adm_s_m*Ms[1, 1])
-        tp = 2.0/(adm_p_0*Mp[0,0] + Mp[1, 0] + adm_p_0*adm_p_m*Mp[0, 1] + adm_p_m*Mp[1, 1])
+
+        def _reflection_coefficient(M, adm_0, adm_m_M01, adm_m_M11):
+            b, c, d = M[1,0]/adm_0, adm_m_M01, adm_m_M11/adm_0
+            bpd = b + d
+            r = (M[0,0] - bpd + c)/(M[0,0] + bpd + c)
+            return r
+
+        def _transmission_coefficient(M, adm_0, adm_m_M01, adm_m_M11):
+            t = 2.0/(adm_0*M[0,0] + M[1, 0] + adm_0*adm_m_M01 + adm_m_M11)
+            return t
+
+        adm_p_m_Mp01 = adm_p_m*Mp[0, 1]
+        adm_s_m_Ms01 = adm_s_m*Ms[0, 1]
+        adm_p_m_Mp11 = adm_p_m*Mp[1, 1]
+        adm_s_m_Ms11 = adm_s_m*Ms[1, 1]
+
+        rs = _reflection_coefficient(Ms, adm_s_0, adm_s_m_Ms01, adm_s_m_Ms11)
+        rp = _reflection_coefficient(Mp, adm_p_0, adm_p_m_Mp01, adm_p_m_Mp11)
+        ts = _transmission_coefficient(Ms, adm_s_0, adm_s_m_Ms01, adm_s_m_Ms11)
+        tp = _transmission_coefficient(Mp, adm_p_0, adm_p_m_Mp01, adm_p_m_Mp11)
+
         return rs, rp, ts, tp
 
     def _save_spectra_data(
@@ -440,7 +460,7 @@ class TMMOptics():
 
         for l, wavelen in enumerate(self._beam.wavelength):
             for a in range(len_ang_inc):
-                cosphi[0] = np.cos(self._beam.angle_inc_rad[a])
+                cosphi[0] = np.cos(self._beam.angle_inc_radians[a])
                 adm_s[l, a, :], adm_p[l, a, :], delta[l, a, :], Ms, Mp = self._complete_transfer_matrix(cosphi, l, wavelen, I, n)
                 emfs[l, a, :] = self._emfield(delta[l, a, :], adm_s[l, a, :], Ms, num_layers + 1)
                 emfp[l, a, :] = self._emfield(delta[l, a, :], adm_p[l, a, :], Mp, num_layers + 1)
@@ -700,12 +720,14 @@ class TMMOptics():
                 _bloch
         """
 
-        def _adm_factor(adm_1, adm_2):
-            x = 0.5*(adm_1**2 + adm_2**2)/adm_1/adm_2
+        def _adm_factor(adm_0, adm_1):
+            #x = 0.5*(adm_0**2 + adm_1**2)/adm_0/adm_1
+            r = adm_0/adm_1
+            x = 0.5*(r + (1.0/r))
             return x
 
-        def _bloch_wavevector(a1, a2, f):
-            x = np.cos(a1)*np.cos(a2) - f*np.sin(a1)*np.sin(a2)
+        def _bloch_wavevector(a0, a1, f):
+            x = np.arccos(np.cos(a0)*np.cos(a1) - f*np.sin(a0)*np.sin(a1))
             return x
 
         def _remove_nans(kappa):
@@ -722,24 +744,26 @@ class TMMOptics():
         self._omega = 2.0*np.pi/self._beam.wavelength # Angular frequency
 
         # Angle of incidence of the second layer with Snell's law of cosine
-        cosphi_1 = np.cos(self._beam.angle_inc_rad)
-        cosphi_2 = np.array([snell_cosine_law(n[0], n[1], a) for a in cosphi_1])
+        cosphi_0 = np.cos(self._beam.angle_inc_radians)
+        cosphi_1 = np.array([snell_cosine_law(n[0], n[1], a) for a in cosphi_1])
 
         # Prefactor for Bloch wavevector
-        factor_s = _adm_factor(n[0]*cosphi_1, n[1]*cosphi_2)
-        factor_p = _adm_factor(n[0]/cosphi_1, n[1]/cosphi_2)
+        factor_s = _adm_factor(admittance_s(n[0], cosphi_0), admittance_s(n[1], cosphi_1))
+        factor_p = _adm_factor(admittance_p(n[0], cosphi_0), admittance_p(n[1], cosphi_1))
         fsr, fsi = np.real(factor_s), np.imag(factor_s)
         fpr, fpi = np.real(factor_p), np.imag(factor_p)
 
         # Bloch wavevectors: I split into real and imag because the arccos seems to have a problem with complexes. It is better but not solved this way.
+        const_0 = d[0]*n[0]*cosphi_0
+        const_1 = d[1]*n[1]*cosphi_1
         for a in range(len(cosphi_1)):
             for b in range(len(self._omega)):
-                a1 = d[0]*self._omega[b]*n[0]*cosphi_1[a]
-                a2 = d[1]*self._omega[b]*n[1]*cosphi_2[a]
-                kpr[b, a] = np.arccos(_bloch_wavevector(a1, a2, fpr[a]))
-                ksr[b, a] = np.arccos(_bloch_wavevector(a1, a2, fsr[a]))
-                kpi[b, a] = np.arccos(_bloch_wavevector(a1, a2, fpi[a]))
-                ksi[b, a] = np.arccos(_bloch_wavevector(a1, a2, fsi[a]))
+                a0 = const_0[a]*self._omega[b]
+                a1 = const_1[a]*self._omega[b]
+                kpr[b, a] = _bloch_wavevector(a0, a1, fpr[a])
+                ksr[b, a] = _bloch_wavevector(a0, a1, fsr[a])
+                kpi[b, a] = _bloch_wavevector(a0, a1, fpi[a])
+                ksi[b, a] = _bloch_wavevector(a0, a1, fsi[a])
 
         kp = kpr + kpi*1j
         ks = ksr + ksi*1j
@@ -764,7 +788,7 @@ class TMMOptics():
             "Bloch",
             [
                 "bloch_vector_p",
-                "bloch_vector_p",
+                "bloch_vector_s",
             ],
         )
         self._bloch = Bloch(
@@ -787,9 +811,20 @@ class TMMOptics():
         """
         n0, n1, n2 = self._n_wavelength_0[0:3]
 
-        self._omega_h = self._crystal_period/np.pi/(d[0]*n1 + d[1]*n2)*np.arccos(-np.abs(n1 - n2)/(n1 + n2))
+        num_pi = self._crystal_period/np.pi
+        n0sq, n1sq, n2sq = n0**2, n1**2, n2**2
+        n1sq_minus_n0sq = n1sq - n0sq
+        n2sq_minus_n0sq = n2sq - n0sq
+        sqrt_n2sq_minus_n0sq = np.sqrt(n2sq_minus_n0sq)
+        sqrt_n1sq_minus_n0sq = np.sqrt(n1sq_minus_n0sq)
+        num_0 = d[1]*np.sqrt(n2sq_minus_n0sq) + d[0]*np.sqrt(n1sq_minus_n0sq)
+        num_1 = np.abs(
+            (n1sq*sqrt_n2sq_minus_n0sq - n2sq*sqrt_n1sq_minus_n0sq)/(n1sq*sqrt_n2sq_minus_n0sq + n2sq*sqrt_n1sq_minus_n0sq)
+        )
 
-        self._omega_l = self._crystal_period/np.pi/(d[1]*np.sqrt(n2**2 - n0**2) + d[0]*np.sqrt(n1**2 - n0**2))*np.arccos(np.abs((n1**2*np.sqrt(n2**2 - n0**2) - n2**2*np.sqrt(n1**2 - n0**2))/(n1**2*np.sqrt(n2**2 - n0**2) + n2**2*np.sqrt(n1**2 - n0**2))))
+        self._omega_h = num_pi/(d[0]*n1 + d[1]*n2)*np.arccos(-np.abs(n1 - n2)/(n1 + n2))
+
+        self._omega_l = num_pi/num_0*np.arccos(num_1)
 
         return self
 
