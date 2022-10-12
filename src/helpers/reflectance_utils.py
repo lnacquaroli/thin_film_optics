@@ -4,15 +4,16 @@
 from typing import Any, NamedTuple, Tuple, List
 import numpy as np
 
-from effective_index_models import looyenga, inverse_looyenga
-from refractive_index_db import silicon
-from thin_film_optics.transfer_matrix_method import TMMOptics
+from ..thin_film_optics import effective_medium_models as ema
+from ..thin_film_optics import refractive_index_database as ridb
+
+from ..thin_film_optics.transfer_matrix_method import TMMOptics
 
 
 FOURPI = 4.0*np.pi
 
 
-def reflectance_fresnel_binary(
+def reflectance_fresnel_binary_ema(
     *,
     params: Any,
     beam: Any,
@@ -20,8 +21,8 @@ def reflectance_fresnel_binary(
     n_substrate: Any,
     n_void: Any,
     n_matrix: Any,
-    ema_binary_func: function = looyenga,
-    inverse_ema_func: function = inverse_looyenga,
+    ema_binary_func: function = ema.looyenga,
+    inverse_ema_func: function = ema.inverse_looyenga,
 ) -> Any:
     """Calculates the reflection spectrum of a thin film single layer deposited on a substrate.
     It uses the binary Looyenga model for the calculation of the index of refraction as default.

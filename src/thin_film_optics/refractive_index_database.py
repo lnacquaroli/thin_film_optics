@@ -10,7 +10,6 @@ import scipy.interpolate
 import numpy as np
 
 
-
 def _interpolate_index_refraction(
     *,
     wavelength_oi: Any,
