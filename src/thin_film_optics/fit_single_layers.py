@@ -140,7 +140,7 @@ def linear_search_binary_ema(
     n_substrate: Any,
     n_void: Any,
     n_matrix: Any,
-    NUM_GRID: int = 40,
+    num_grid: int = 40,
     objective_func: function = objective_function_binary_ema,
     ema_binary_func: function = ema.looyenga,
     inverse_ema_func: function = ema.inverse_looyenga, # EMA to recover the physical thickness
@@ -156,7 +156,7 @@ def linear_search_binary_ema(
         n_substrate (ndarray): Substrate index of refraction.
         n_void (ndarray): Component 1 of the mixture.
         n_matrix (ndarray): Component 2 of the mixture.
-        NUM_GRID (int, optional): Number of point to generate the grids. Defaults to 40.
+        num_grid (int, optional): Number of point to generate the grids. Defaults to 40.
         cost_func (function, optional): Cost function to estimate the loss. Defaults to cost_function_binary_ema.
         ema_binary_func (function, optional): Mixing rule to use.. Defaults to ema.looyenga.
         inverse_ema_func (function, optional): Inverse of the mixing rule selected. Defaults to ema.inverse_looyenga.
@@ -197,8 +197,8 @@ def linear_search_binary_ema(
             grid_params_1,
         )
 
-    aux1 = np.linspace(LB[0], UB[0], NUM_GRID)
-    aux2 = np.linspace(LB[1], UB[1], NUM_GRID)
+    aux1 = np.linspace(LB[0], UB[0], num_grid)
+    aux2 = np.linspace(LB[1], UB[1], num_grid)
 
     error_surface, min_error_surface, s = _naive_search(
         aux1 = aux1,
@@ -233,7 +233,7 @@ def random_search_binary_ema(
     n_substrate: Any,
     n_void: Any,
     n_matrix: Any,
-    NUM_GRID: int = 40,
+    num_grid: int = 40,
     objective_func: function = objective_function_binary_ema,
     ema_binary_func: function = ema.looyenga,
     inverse_ema_func: function = ema.inverse_looyenga, # EMA to recover the physical thickness
@@ -250,7 +250,7 @@ def random_search_binary_ema(
         n_substrate (ndarray): Substrate index of refraction.
         n_void (ndarray): Component 1 of the mixture.
         n_matrix (ndarray): Component 2 of the mixture.
-        NUM_GRID (int, optional): Number of point to generate the grids. Defaults to 40.
+        num_grid (int, optional): Number of point to generate the grids. Defaults to 40.
         cost_func (function, optional): Cost function to estimate the loss. Defaults to cost_function_binary_ema.
         ema_binary_func (function, optional): Mixing rule to use.. Defaults to ema.looyenga.
         inverse_ema_func (function, optional): Inverse of the mixing rule selected. Defaults to ema.inverse_looyenga.
@@ -293,7 +293,7 @@ def random_search_binary_ema(
         )
 
     np.random.seed(random_seed)
-    rand_nums = np.random.rand(NUM_GRID)
+    rand_nums = np.random.rand(num_grid)
 
     aux1 = LB[0] + rand_nums * (UB[0] - LB[0])
     aux2 = LB[1] + rand_nums * (UB[1] - LB[1])
