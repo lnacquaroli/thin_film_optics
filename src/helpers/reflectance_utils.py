@@ -16,7 +16,7 @@ FOURPI = 4.0*np.pi
 def reflectance_fresnel_binary_ema(
     *,
     params: Any,
-    beam: Any,
+    beam: NamedTuple,
     n_incident: Any,
     n_substrate: Any,
     n_void: Any,
@@ -167,6 +167,7 @@ def normalize_experimental_reflectance(
 
 
 def reflectance_layered(
+    *,
     layers: List[NamedTuple],
     beam: NamedTuple,
 ) -> Tuple[Any, Any, Any]:
