@@ -46,14 +46,14 @@ def _check_fraction_input(fraction):
 def lorentz_lorenz(
     refractive_index_1: Any,
     refractive_index_2: Any,
-    fraction_1: float,
+    fraction_1: Any,
 ) -> Any:
     """Effective index of refraction of a binary mix using the Lorentz-Lorenz model.
 
     Args:
         refractive_index_1 (ndarray[complex]) : Index of refraction of the component 1
         refractive_index_2 (ndarray[complex]) : Index of refraction of the component 2
-        fraction_1 (float): Fraction of component 1 in the mixture.
+        fraction_1 (Any): Fraction of component 1 in the mixture.
 
     Returns:
         (ndarray[complex]): Effective refractive index.
@@ -72,14 +72,14 @@ def lorentz_lorenz(
 def maxwell_garnett(
     refractive_index_1: Any,
     refractive_index_2: Any,
-    fraction_1: float,
+    fraction_1: Any,
 ) -> Any:
     """Effective index of refraction of a binary mix using the Maxwell-Garnett model.
 
     Args:
         refractive_index_1 (ndarray[complex]) : Index of refraction of the component 1
         refractive_index_2 (ndarray[complex]) : Index of refraction of the component 2
-        fraction_1 (float): Fraction of component 1 in the mixture.
+        fraction_1 (Any): Fraction of component 1 in the mixture.
 
     Returns:
         (ndarray[complex]): Effective refractive index.
@@ -103,14 +103,14 @@ def maxwell_garnett(
 def bruggeman(
     refractive_index_1: Any,
     refractive_index_2: Any,
-    fraction_1: float,
+    fraction_1: Any,
 ) -> Any:
     """Effective index of refraction of a binary mix using the Bruggeman model.
 
     Args:
         refractive_index_1 (ndarray[complex]) : Index of refraction of the component 1
         refractive_index_2 (ndarray[complex]) : Index of refraction of the component 2
-        fraction_1 (float): Fraction of component 1 in the mixture.
+        fraction_1 (Any): Fraction of component 1 in the mixture.
 
     Returns:
         (ndarray[complex]): Effective refractive index.
@@ -131,14 +131,14 @@ def bruggeman(
 def looyenga(
     refractive_index_1: Any,
     refractive_index_2: Any,
-    fraction_1: float,
+    fraction_1: Any,
 ) -> Any:
     """Effective index of refraction of a binary mix using the Looyenga-Landau-Lifshitz model.
 
     Args:
         refractive_index_1 (ndarray[complex]) : Index of refraction of the component 1
         refractive_index_2 (ndarray[complex]) : Index of refraction of the component 2
-        fraction_1 (float): Fraction of component 1 in the mixture.
+        fraction_1 (Any): Fraction of component 1 in the mixture.
 
     Returns:
         (ndarray[complex]): Effective refractive index.
@@ -152,11 +152,11 @@ def looyenga(
     return effective_index
 
 
-def inverse_looyenga(fraction: float, effective_optical_thickness: Any) -> Any:
+def inverse_looyenga(fraction: Any, effective_optical_thickness: Any) -> Any:
     """Returns the physical thickness for a given fraction and optical thickness using the Looyenga-Landau-Lifshitz model with two components.
 
     Args:
-        fraction (float): fraction of the mixture.
+        fraction (Any): fraction of the mixture.
         effective_optical_thickness (ndarray, complex, float): effective optical thickness.
 
     Returns:
