@@ -36,7 +36,7 @@ def objective_func_binary_ema(
     - Uses a binary mixing rule.
 
     Args:
-        params (Tuple, List): Thickness and fraction of component n_void.
+        params (Tuple, List or ndarray): Thickness and fraction of component n_void.
         beam (NamedTuple): Beam parameter structure.
         n_incident (ndarray): Incident index of refraction.
         n_substrate (ndarray): Substrate index of refraction.
@@ -68,19 +68,19 @@ def objective_func_binary_ema(
 
 def _naive_search(
     *,
-    aux1,
-    aux2,
-    objective_func,
-    ref_experimental,
-    n_incident,
-    n_substrate,
-    n_void,
-    n_matrix,
-    beam,
-    ema_binary_func,
-    inverse_ema_func,
-    loss_func,
-):
+    aux1: Any,
+    aux2: Any,
+    objective_func: function,
+    ref_experimental: Any,
+    n_incident: Any,
+    n_substrate: Any,
+    n_void: Any,
+    n_matrix: Any,
+    beam: NamedTuple,
+    ema_binary_func: function,
+    inverse_ema_func: function,
+    loss_func: function,
+) -> Tuple:
     """Generates the surface solution given the grids input.
 
     - Computes the objective_func cost comparing the calculated and experimental reflectance spectra.
@@ -127,8 +127,8 @@ def _naive_search(
     return error_surface, np.min(error_surface), s
 
 def linear_search_binary_ema(
-    LB: Tuple,
-    UB: Tuple,
+    LB: Tuple | List,
+    UB: Tuple | List,
     beam: Any,
     ref_experimental: Any,
     n_incident: Any,
@@ -144,8 +144,8 @@ def linear_search_binary_ema(
     """Returns a linear search for the input lower and upper bounds, calculating the loss between the experimental and theoretical reflectance, using a binary mixing rule.
 
     Args:
-        LB (Tuple): Lower bounds of the thickness and fraction.
-        UB (Tuple): Upper bounds of the thickness and fraction.
+        LB (Tuple or List): Lower bounds of the thickness and fraction.
+        UB (Tuple or List): Upper bounds of the thickness and fraction.
         beam (NamedTuple): Beam parameter structure.
         ref_experimental (ndarray): Experimental reflectance for a range of wavelengths.
         n_incident (ndarray): Incident index of refraction.
@@ -223,8 +223,8 @@ def linear_search_binary_ema(
     return solution
 
 def random_search_binary_ema(
-    LB: Tuple,
-    UB: Tuple,
+    LB: Tuple | List,
+    UB: Tuple | List,
     beam: Any,
     ref_experimental: Any,
     n_incident: Any,
@@ -241,8 +241,8 @@ def random_search_binary_ema(
     """Returns a random search for the input lower and upper bounds, calculating the loss between the experimental and theoretical reflectance, using a binary mixing rule.
 
     Args:
-        LB (Tuple): Lower bounds of the thickness and fraction.
-        UB (Tuple): Upper bounds of the thickness and fraction.
+        LB (Tuple or List): Lower bounds of the thickness and fraction.
+        UB (Tuple or List): Upper bounds of the thickness and fraction.
         beam (NamedTuple): Beam parameter structure.
         ref_experimental (ndarray): Experimental reflectance for a range of wavelengths.
         n_incident (ndarray): Incident index of refraction.
@@ -336,7 +336,7 @@ def objective_func_binary_ema_fraction_gradient(
     ema_binary_func: function = ema.looyenga,
     loss_func: function = mae_loss_function,
     gradient_function: function = linear_porosity,
-):
+) -> float:
     """Returns the loss function between the ref_experimental and the calculated reflectance spectra.
 
     - It uses a three layers system in which the single layer between the two outter media is represented by a stack of layers with a fraction that changes in position. This simulates the inhomegeneity of the dissolution process in the anodization of the material. (porosity gradient in depth)
@@ -368,14 +368,12 @@ def objective_func_binary_ema_fraction_gradient(
         # Effective layers
         ema_layers = ema_binary_func(n_void[w], n_matrix[w], pvec)
 
-        # Build the index of refraction for all the layers
         for d, grad_layer in zip(dvec, ema_layers):
-            N = np.concatenate([
-                n_incident[w],
-                grad_layer,
-                n_substrate[w],
-            ])
 
+            # Build refractive index of layers per wavelength
+            N = np.concatenate([n_incident[w], grad_layer, n_substrate[w]])
+
+            # Build layer system
             layers.append(
                 tmmo_layer(
                     index_refraction = N,
@@ -397,14 +395,14 @@ def objective_func_binary_ema_fraction_gradient(
 
     return cost
 
-def linear_porosity(*, params: Tuple | List, num_layers: int) -> Tuple:
+def linear_porosity(*, params: Any, num_layers: int) -> Tuple:
     """Build the linear porosity array variation in terms of the thickness.
 
     porosity[i] = params[1] + params[2]*i/num_layers
     thickness[i] = params[0]*i/num_layers
 
     Args:
-        params (Tuple, List): (thickness, fraction, alpha)
+        params (Tuple, List, or ndarray): (thickness, fraction, alpha)
         num_layers (int): Number of layers to build up.
 
     Raises:

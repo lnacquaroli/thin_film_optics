@@ -16,7 +16,7 @@ from ..helpers.reflectance_utils import reflectance_layered
 import effective_medium_models as ema
 
 
-def merito2(
+def objective_func_binary_ema_alpha_depth(
     *,
     params: Any,
     beam: NamedTuple,
@@ -26,18 +26,17 @@ def merito2(
     n_matrix: Any,
     ref_experimental: Any,
     ema_binary_func: function = ema.looyenga,
-    inverse_ema_func: function = ema.inverse_looyenga,
     loss_func: function = mae_loss_function,
     num_layers_bragg: int = 4,
     num_layers_defect: int = 2,
-):
+) -> float:
     """Returns the optimization cost fitting the calculated and experimental reflectance spectra of a multilayer with a binary EMA.
 
     - It alternates two different layers.
     - It also fits an alpha parameter to simulate a variation of the thicknesses of each layer in depth (from surface to bottom) of the multilayer.
 
     Args:
-        params (Tuple, List): Thicknesses, fractions and alpha.
+        params (Tuple, List or ndarray): Thicknesses, fractions and alpha.
         beam (NamedTuple): Beam parameter structure.
         n_incident (ndarray): Incident index of refraction.
         n_substrate (ndarray): Substrate index of refraction.
@@ -79,16 +78,14 @@ def merito2(
         layers = list()
 
         # Effective layers
-        ema_layers = ema_binary_func(n_void[w], n_matrix[w], pvec)
+        ema_layers = ema_binary_func(n_void[w], n_matrix[w], fractions_vec)
 
-        # Build the index of refraction for all the layers
         for d, grad_layer in zip(thicknesses_vec, ema_layers):
-            N = np.concatenate([
-                n_incident[w],
-                grad_layer,
-                n_substrate[w],
-            ])
 
+            # Build refractive index of layers per wavelength
+            N = np.concatenate([n_incident[w], grad_layer, n_substrate[w]])
+
+            # Build layer system
             layers.append(
                 tmmo_layer(
                     index_refraction = N,
@@ -108,3 +105,4 @@ def merito2(
 
     cost = loss_func(reflectance, ref_experimental)
 
+    return cost
