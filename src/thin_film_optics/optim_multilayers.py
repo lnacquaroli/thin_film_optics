@@ -29,7 +29,7 @@ def objective_func_binary_ema_alpha_depth(
     loss_func: function = mae_loss_function,
     num_layers_bragg: int = 4,
     num_layers_defect: int = 2,
-) -> float:
+) -> Any:
     """Returns the optimization cost fitting the calculated and experimental reflectance spectra of a multilayer with a binary EMA.
 
     - It alternates two different layers.

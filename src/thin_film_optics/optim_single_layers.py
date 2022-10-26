@@ -30,7 +30,7 @@ def objective_func_binary_ema(
     ema_binary_func: function = ema.looyenga,
     inverse_ema_func: function = ema.inverse_looyenga,
     loss_func: function = mae_loss_function,
-) -> float:
+) -> Any:
     """Returns the mean-abs cost value between the experimental and calculated reflectance spectra.
 
     - Uses a binary mixing rule.
@@ -80,7 +80,7 @@ def _naive_search(
     ema_binary_func: function,
     inverse_ema_func: function,
     loss_func: function,
-) -> Tuple:
+) -> Any:
     """Generates the surface solution given the grids input.
 
     - Computes the objective_func cost comparing the calculated and experimental reflectance spectra.
@@ -127,8 +127,8 @@ def _naive_search(
     return error_surface, np.min(error_surface), s
 
 def linear_search_binary_ema(
-    LB: Tuple | List,
-    UB: Tuple | List,
+    LB: List[Any],
+    UB: List[Any],
     beam: Any,
     ref_experimental: Any,
     n_incident: Any,
@@ -169,12 +169,12 @@ def linear_search_binary_ema(
 
     def _linear_search_solution_space(
         *,
-        error_surface,
-        min_error_surface,
-        optimal_params,
-        grid_params_0,
-        grid_params_1,
-    ):
+        error_surface: Any,
+        min_error_surface: float,
+        optimal_params: List[Any],
+        grid_params_0: Any,
+        grid_params_1: Any,
+    ) -> NamedTuple:
 
         LinearSearchSolSpace = namedtuple(
             "LinearSearchSolSpace", [
@@ -223,8 +223,8 @@ def linear_search_binary_ema(
     return solution
 
 def random_search_binary_ema(
-    LB: Tuple | List,
-    UB: Tuple | List,
+    LB: List[Any],
+    UB: List[Any],
     beam: Any,
     ref_experimental: Any,
     n_incident: Any,
@@ -267,12 +267,12 @@ def random_search_binary_ema(
 
     def _random_search_solution_space(
         *,
-        error_surface,
-        min_error_surface,
-        optimal_params,
-        grid_params_0,
-        grid_params_1,
-    ):
+        error_surface: Any,
+        min_error_surface: float,
+        optimal_params: List[Any],
+        grid_params_0: Any,
+        grid_params_1: Any,
+    ) -> NamedTuple:
 
         RandomSearchSolSpace = namedtuple(
             "RandomSearchSolSpace", [
@@ -336,7 +336,7 @@ def objective_func_binary_ema_fraction_gradient(
     ema_binary_func: function = ema.looyenga,
     loss_func: function = mae_loss_function,
     gradient_function: function = linear_porosity,
-) -> float:
+) -> Any:
     """Returns the loss function between the ref_experimental and the calculated reflectance spectra.
 
     - It uses a three layers system in which the single layer between the two outter media is represented by a stack of layers with a fraction that changes in position. This simulates the inhomegeneity of the dissolution process in the anodization of the material. (porosity gradient in depth)
@@ -395,7 +395,7 @@ def objective_func_binary_ema_fraction_gradient(
 
     return cost
 
-def linear_porosity(*, params: Any, num_layers: int) -> Tuple:
+def linear_porosity(*, params: Any, num_layers: int) -> Tuple[Any, Any]:
     """Build the linear porosity array variation in terms of the thickness.
 
     porosity[i] = params[1] + params[2]*i/num_layers
