@@ -18,14 +18,13 @@ def _check_index_input(refractive_index: Any) -> Any:
         (ndarray): refractive_index
     """
     if isinstance(refractive_index, list):
-        refractive_index_ = np.array(refractive_index, dtype = complex)
-        return refractive_index_
+        return np.array(refractive_index, dtype = complex)
 
     elif isinstance(refractive_index, np.ndarray):
         if not isinstance(refractive_index.dtype, complex):
-            return np.array(refractive_index)
+            return np.array(refractive_index, dtype = complex)
 
-        return refractive_index
+    return refractive_index
 
 def _check_fraction_input(fraction):
     """Check input for the fraction.
