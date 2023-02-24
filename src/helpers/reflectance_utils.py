@@ -4,10 +4,10 @@
 from typing import Any, NamedTuple, Tuple, List, Callable
 import numpy as np
 
-from ..thin_film_optics import effective_medium_models as ema
-from ..thin_film_optics import refractive_index_database as ridb
+from .thin_film_optics import effective_medium_models as ema
+from .thin_film_optics import refractive_index_database as ridb
 
-from ..thin_film_optics.transfer_matrix_method import TMMOptics
+from .thin_film_optics.transfer_matrix_method import TMMOptics
 
 
 FOURPI = 4.0*np.pi
