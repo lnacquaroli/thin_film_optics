@@ -745,7 +745,7 @@ class TMMOptics():
 
         # Angle of incidence of the second layer with Snell's law of cosine
         cosphi_0 = np.cos(self._beam.angle_inc_radians)
-        cosphi_1 = np.array([snell_cosine_law(n[0], n[1], a) for a in cosphi_1])
+        cosphi_1 = np.array([snell_cosine_law(n[0], n[1], a) for a in cosphi_0])
 
         # Prefactor for Bloch wavevector
         factor_s = _adm_factor(admittance_s(n[0], cosphi_0), admittance_s(n[1], cosphi_1))
