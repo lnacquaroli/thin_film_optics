@@ -70,7 +70,7 @@ def _naive_search(
     *,
     aux1: Any,
     aux2: Any,
-    objective_func: function,
+    objective_func: Callable,
     ref_experimental: Any,
     n_incident: Any,
     n_substrate: Any,
