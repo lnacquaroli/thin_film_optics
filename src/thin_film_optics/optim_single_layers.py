@@ -321,6 +321,36 @@ def random_search_binary_ema(
     )
 
     return solution
+   
+def linear_porosity(*, params: Any, num_layers: int) -> Tuple[Any, Any]:
+    """Build the linear porosity array variation in terms of the thickness.
+
+    porosity[i] = params[1] + params[2]*i/num_layers
+    thickness[i] = params[0]*i/num_layers
+
+    Args:
+        params (Tuple, List, or ndarray): (thickness, fraction, alpha)
+        num_layers (int): Number of layers to build up.
+
+    Raises:
+        ValueError: If the number of parameters is not 3.
+
+    Returns:
+        (Tuple): (Thickness array, Fraction array)
+    """
+
+    if len(params) == 3:
+
+        pvec = params[1] \
+            + params[2]*(1.0 - np.linspace(1, num_layers, num = num_layers)/num_layers)
+
+        dvec = np.ones(num_layers)*params[0]/num_layers
+
+        return pvec, dvec
+
+    raise ValueError(
+        "the input params should have three values: thickness, fraction and alpha parameters."
+    )
 
 def objective_func_binary_ema_fraction_gradient(
     *,
@@ -393,34 +423,4 @@ def objective_func_binary_ema_fraction_gradient(
     cost = loss_func(reflectance, ref_experimental)
 
     return cost
-
-def linear_porosity(*, params: Any, num_layers: int) -> Tuple[Any, Any]:
-    """Build the linear porosity array variation in terms of the thickness.
-
-    porosity[i] = params[1] + params[2]*i/num_layers
-    thickness[i] = params[0]*i/num_layers
-
-    Args:
-        params (Tuple, List, or ndarray): (thickness, fraction, alpha)
-        num_layers (int): Number of layers to build up.
-
-    Raises:
-        ValueError: If the number of parameters is not 3.
-
-    Returns:
-        (Tuple): (Thickness array, Fraction array)
-    """
-
-    if len(params) == 3:
-
-        pvec = params[1] \
-            + params[2]*(1.0 - np.linspace(1, num_layers, num = num_layers)/num_layers)
-
-        dvec = np.ones(num_layers)*params[0]/num_layers
-
-        return pvec, dvec
-
-    raise ValueError(
-        "the input params should have three values: thickness, fraction and alpha parameters."
-    )
 
