@@ -9,11 +9,11 @@ import logging
 
 import numpy as np
 
-from helpers.reflectance_utils import snell_cosine_law
-from helpers.reflectance_utils import phase_shift
-from helpers.reflectance_utils import admittance_p, admittance_s
+from src.helpers.reflectance_utils import snell_cosine_law
+from src.helpers.reflectance_utils import phase_shift
+from src.helpers.reflectance_utils import admittance_p, admittance_s
 
-from helpers.utils import _neg_eps_finfo
+from src.helpers.utils import _neg_eps_finfo
 #from beam_parameters import beam_parameters
 #from layer_information import tmmo_layer
 
