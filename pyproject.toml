@@ -2,7 +2,7 @@
 name = "thin-film-optics"
 version = "0.1.0"
 description = ""
-authors = ["Leandro Acquaroli <leandro.n.acquaroli@gmail.com>"]
+authors = ["Leandro Acquaroli"]
 readme = "README.md"
 packages = [{include = "thin_film_optics", from = "src"}]
 
