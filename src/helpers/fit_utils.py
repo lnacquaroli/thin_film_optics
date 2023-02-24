@@ -2,7 +2,7 @@
 It needs the effective_index_models.py and refractive_index_db.py files in the path.
 """
 
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 
@@ -21,9 +21,9 @@ def loss_fresnel_ema_binary(
     n_substrate: Any,
     n_void: Any,
     n_matrix: Any,
-    ema_binary_func: function = looyenga,
-    inverse_ema_func: function = inverse_looyenga,
-    loss_function: Any = mae_loss_function,
+    ema_binary_func: Callable = looyenga,
+    inverse_ema_func: Callable = inverse_looyenga,
+    loss_function: Callable = mae_loss_function,
 ) -> Any:
     """Calculates the loss function between the experimental reflection spectrum and a calculated one using the Fresnel coefficients.
     It works for a system of 3 media: incident,thin-film, substrate.
@@ -37,9 +37,9 @@ def loss_fresnel_ema_binary(
         n_substrate (ndarray): index of refraction of the substrate medium as a function of wavelengths
         n_void (ndarray): index of refraction of the void medium as a function of wavelengths inside the effective medium
         n_matrix (ndarray): index of refraction of the matrix medium as a function of wavelengths inside the effective medium
-        ema_binary_func (function): effective medium approximation. Defaults to looyenga.
-        inverse_ema_func (function): inverse of ema_binary_func to retrieve the physical thickness. Defaults to inverse_looyenga.
-        loss_function (function): function to calculate the loss between two arrays. Defaults to mae_loss_function.
+        ema_binary_func (Callable): effective medium approximation. Defaults to looyenga.
+        inverse_ema_func (Callable): inverse of ema_binary_func to retrieve the physical thickness. Defaults to inverse_looyenga.
+        loss_function (Callable): function to calculate the loss between two arrays. Defaults to mae_loss_function.
 
     Returns:
         (float): loss value between the experimental and calculated reflectances spectra.

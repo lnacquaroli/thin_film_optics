@@ -1,7 +1,7 @@
 """Collection of functions to deal with the reflectance.
 """
 
-from typing import Any, NamedTuple, Tuple, List
+from typing import Any, NamedTuple, Tuple, List, Callable
 import numpy as np
 
 from ..thin_film_optics import effective_medium_models as ema
@@ -21,8 +21,8 @@ def reflectance_fresnel_binary_ema(
     n_substrate: Any,
     n_void: Any,
     n_matrix: Any,
-    ema_binary_func: function = ema.looyenga,
-    inverse_ema_func: function = ema.inverse_looyenga,
+    ema_binary_func: Callable = ema.looyenga,
+    inverse_ema_func: Callable = ema.inverse_looyenga,
 ) -> Any:
     """Calculates the reflection spectrum of a thin film single layer deposited on a substrate.
     It uses the binary Looyenga model for the calculation of the index of refraction as default.
@@ -37,8 +37,8 @@ def reflectance_fresnel_binary_ema(
         n_substrate (ndarray): index of refraction of the substrate medium as a function of wavelengths
         n_void (ndarray): index of refraction of the void medium as a function of wavelengths inside the effective medium
         n_matrix (ndarray): index of refraction of the matrix medium as a function of wavelengths inside the effective medium
-        ema_binary_func (function): effective medium approximation (default: looyenga)
-        inverse_ema_func (function): inverse of ema_binary_func to retrieve the physical thickness (default: inverse_looyenga)
+        ema_binary_func (Callable): effective medium approximation (default: looyenga)
+        inverse_ema_func (Callable): inverse of ema_binary_func to retrieve the physical thickness (default: inverse_looyenga)
 
     Returns:
         (ndarray): Polarisation averaged reflectance spectrum.

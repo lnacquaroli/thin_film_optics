@@ -4,7 +4,7 @@
 - Some functionality for Fabry-Perot type offered also.
 """
 
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, Callable
 
 import numpy as np
 
@@ -25,8 +25,8 @@ def objective_func_binary_ema_alpha_depth(
     n_void: Any,
     n_matrix: Any,
     ref_experimental: Any,
-    ema_binary_func: function = ema.looyenga,
-    loss_func: function = mae_loss_function,
+    ema_binary_func: Callable = ema.looyenga,
+    loss_func: Callable = mae_loss_function,
     num_layers_bragg: int = 4,
     num_layers_defect: int = 2,
 ) -> Any:
@@ -43,8 +43,8 @@ def objective_func_binary_ema_alpha_depth(
         n_void (ndarray): Component 1 of the mixture.
         n_matrix (ndarray): Component 2 of the mixture.
         ref_experimental (ndarray): Experimental reflectance spectrum.
-        ema_binary_func (function, optional): Mixing rule to use. Defaults to ema.looyenga.
-        loss_func (function): Loss function to calculate the cost. Defaults to mae_loss_function.
+        ema_binary_func (Callable, optional): Mixing rule to use. Defaults to ema.looyenga.
+        loss_func (Callable): Loss function to calculate the cost. Defaults to mae_loss_function.
         num_layers_bragg (int, optional): Number of layers in the Bragg mirrors at the side of the defect. Defaults to 4.
         num_layers_defect (int, optional): Number of layers in the central defect of the multilayer. Defaults to 2.
 
