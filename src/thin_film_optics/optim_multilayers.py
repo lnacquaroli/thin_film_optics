@@ -9,11 +9,11 @@ from typing import Any, NamedTuple, Callable
 import numpy as np
 
 from ..helpers.loss_functions_utils import mae_loss_function, mse_loss_function
+
 from .layer_information import tmmo_layer
 from .beam_parameters import beam_parameters
-from ..helpers.reflectance_utils import reflectance_layered
-
-import effective_medium_models as ema
+from .reflectance import reflectance_layered
+from . import effective_medium_models as ema
 
 
 def objective_func_binary_ema_alpha_depth(
@@ -64,14 +64,20 @@ def objective_func_binary_ema_alpha_depth(
 
     fractions, thicknesses, alpha = params[0:2], params[2:5], params[5]
 
-    fractions_vec = _tile_vectors(fractions, num_layers_bragg, num_layers_defect) #pvec
+    fractions_vec = _tile_vectors(
+        fractions, num_layers_bragg, num_layers_defect
+    )  # pvec
 
-    vec_1 = np.arange(2*num_layers_bragg + num_layers_defect)
+    vec_1 = np.arange(2 * num_layers_bragg + num_layers_defect)
     thicknesses_vec = _tile_vectors(
-        thicknesses, num_layers_bragg, num_layers_defect,
-    )*np.concatenate(([1], alpha**vec_1))  #dvec
+        thicknesses,
+        num_layers_bragg,
+        num_layers_defect,
+    ) * np.concatenate(
+        ([1], alpha**vec_1)
+    )  # dvec
 
-    reflectance = np.zeros(len(beam.wavelength), dtype = np.float)
+    reflectance = np.zeros(len(beam.wavelength), dtype=np.float)
     for w in range(len(beam.wavelength)):
 
         # Build the layer system
@@ -88,18 +94,18 @@ def objective_func_binary_ema_alpha_depth(
             # Build layer system
             layers.append(
                 tmmo_layer(
-                    index_refraction = N,
-                    thickness = d,
+                    index_refraction=N,
+                    thickness=d,
                 )
             )
 
         reflectance[w] = reflectance_layered(
-            layers = layers,
-            beam = beam_parameters(
-                wavelength = beam.wavelength[w],
-                angle_inc_degree = beam.angle_inc_degrees,
-                polarisation = beam.polarisation,
-                wavelength_0 = beam.wavelength_0,
+            layers=layers,
+            beam=beam_parameters(
+                wavelength=beam.wavelength[w],
+                angle_inc_degree=beam.angle_inc_degrees,
+                polarisation=beam.polarisation,
+                wavelength_0=beam.wavelength_0,
             ),
         )
 

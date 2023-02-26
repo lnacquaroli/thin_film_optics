@@ -4,8 +4,8 @@ Pull requests
 Issues
 Marketplace
 Explore
- 
-@lnacquaroli 
+
+@lnacquaroli
 lnacquaroli
 /
 ThinFilmOptics
@@ -31,6 +31,8 @@ Latest commit e78dbc7 on Jan 27
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
+*/__pycache__/
+*/_*/_pycache__/
 *.py[cod]
 *$py.class
 

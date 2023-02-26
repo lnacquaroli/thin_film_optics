@@ -8,8 +8,8 @@ import numpy as np
 
 from .utils import find_closest
 from .loss_functions_utils import mae_loss_function, mse_loss_function
-from effective_index_models import looyenga, inverse_looyenga
-from .reflectance_utils import reflectance_fresnel_binary
+from ..thin_film_optics.effective_medium_models import looyenga, inverse_looyenga
+from ..thin_film_optics.reflectance import reflectance_fresnel_binary_ema
 
 
 def loss_fresnel_ema_binary(
@@ -44,15 +44,15 @@ def loss_fresnel_ema_binary(
     Returns:
         (float): loss value between the experimental and calculated reflectances spectra.
     """
-    calculated_reflectance = reflectance_fresnel_binary(
-        params = params,
-        beam = beam,
-        n_incident = n_incident,
-        n_substrate = n_substrate,
-        n_void = n_void,
-        n_matrix = n_matrix,
-        ema_binary_func = ema_binary_func,
-        inverse_ema_func = inverse_ema_func,
+    calculated_reflectance = reflectance_fresnel_binary_ema(
+        params=params,
+        beam=beam,
+        n_incident=n_incident,
+        n_substrate=n_substrate,
+        n_void=n_void,
+        n_matrix=n_matrix,
+        ema_binary_func=ema_binary_func,
+        inverse_ema_func=inverse_ema_func,
     )
 
     loss = loss_function(calculated_reflectance, ref_spectrum)

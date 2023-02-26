@@ -7,15 +7,16 @@ from typing import Any, NamedTuple, Tuple, List, Callable
 from collections import namedtuple
 
 import numpy as np
-#import scipy.interpolate
 
-from ..helpers.reflectance_utils import reflectance_fresnel_binary_ema
-from ..helpers.reflectance_utils import reflectance_layered
+# import scipy.interpolate
+
+from .reflectance import reflectance_fresnel_binary_ema
+from .reflectance import reflectance_layered
 from ..helpers.loss_functions_utils import mae_loss_function, mse_loss_function
 from .layer_information import tmmo_layer
 from .beam_parameters import beam_parameters
-import effective_medium_models as ema
-import refractive_index_database as ridb
+from . import effective_medium_models as ema
+from . import refractive_index_database as ridb
 
 
 def objective_func_binary_ema(
@@ -52,19 +53,20 @@ def objective_func_binary_ema(
     """
 
     reflectance = reflectance_fresnel_binary_ema(
-        params = params,
-        beam = beam,
-        n_incident = n_incident,
-        n_substrate = n_substrate,
-        n_void = n_void,
-        n_matrix = n_matrix,
-        ema_binary_func = ema_binary_func,
-        inverse_ema_func = inverse_ema_func,
+        params=params,
+        beam=beam,
+        n_incident=n_incident,
+        n_substrate=n_substrate,
+        n_void=n_void,
+        n_matrix=n_matrix,
+        ema_binary_func=ema_binary_func,
+        inverse_ema_func=inverse_ema_func,
     )
 
     cost = loss_func(reflectance, ref_experimental)
 
     return cost
+
 
 def _naive_search(
     *,
@@ -107,16 +109,16 @@ def _naive_search(
         for k in range(error_surface.shape[1]):
 
             error_surface[j, k] = objective_func(
-                params = [aux1[j], aux2[k]],
-                ref_experimental = ref_experimental,
-                n_incident = n_incident,
-                n_substrate = n_substrate,
-                beam = beam,
-                n_void = n_void,
-                n_matrix = n_matrix,
-                ema_binary_func = ema_binary_func,
-                inverse_ema_func = inverse_ema_func,
-                loss_function = loss_func,
+                params=[aux1[j], aux2[k]],
+                ref_experimental=ref_experimental,
+                n_incident=n_incident,
+                n_substrate=n_substrate,
+                beam=beam,
+                n_void=n_void,
+                n_matrix=n_matrix,
+                ema_binary_func=ema_binary_func,
+                inverse_ema_func=inverse_ema_func,
+                loss_function=loss_func,
             )  # type: ignore
 
     # Find the minimum of the solution space
@@ -124,6 +126,7 @@ def _naive_search(
     s = [aux1[i1][0], aux2[i2][0]]
 
     return error_surface, np.min(error_surface), s
+
 
 def linear_search_binary_ema(
     LB: List[Any],
@@ -138,7 +141,7 @@ def linear_search_binary_ema(
     objective_func: Callable = objective_func_binary_ema,
     loss_func: Callable = mae_loss_function,
     ema_binary_func: Callable = ema.looyenga,
-    inverse_ema_func: Callable = ema.inverse_looyenga, # EMA to recover the physical thickness
+    inverse_ema_func: Callable = ema.inverse_looyenga,  # EMA to recover the physical thickness
 ) -> NamedTuple:
     """Returns a linear search for the input lower and upper bounds, calculating the loss between the experimental and theoretical reflectance, using a binary mixing rule.
 
@@ -176,13 +179,14 @@ def linear_search_binary_ema(
     ) -> NamedTuple:
 
         LinearSearchSolSpace = namedtuple(
-            "LinearSearchSolSpace", [
+            "LinearSearchSolSpace",
+            [
                 "error_surface",
                 "min_error_surface",
                 "optimal_params",
                 "grid_params_0",
                 "grid_params_1",
-            ]
+            ],
         )
 
         return LinearSearchSolSpace(
@@ -197,29 +201,30 @@ def linear_search_binary_ema(
     aux2 = np.linspace(LB[1], UB[1], num_grid)
 
     error_surface, min_error_surface, s = _naive_search(
-        aux1 = aux1,
-        aux2 = aux2,
-        objective_func = objective_func,
-        ref_experimental = ref_experimental,
-        n_incident = n_incident,
-        n_substrate = n_substrate,
-        n_void = n_void,
-        n_matrix = n_matrix,
-        beam = beam,
-        ema_binary_func = ema_binary_func,
-        inverse_ema_func = inverse_ema_func,
-        loss_func = loss_func,
+        aux1=aux1,
+        aux2=aux2,
+        objective_func=objective_func,
+        ref_experimental=ref_experimental,
+        n_incident=n_incident,
+        n_substrate=n_substrate,
+        n_void=n_void,
+        n_matrix=n_matrix,
+        beam=beam,
+        ema_binary_func=ema_binary_func,
+        inverse_ema_func=inverse_ema_func,
+        loss_func=loss_func,
     )
 
     solution = _linear_search_solution_space(
-        error_surface = error_surface,
-        min_error_surface = min_error_surface,
-        optimal_params = s,
-        grid_params_0 = aux1,
-        grid_params_1 = aux2,
+        error_surface=error_surface,
+        min_error_surface=min_error_surface,
+        optimal_params=s,
+        grid_params_0=aux1,
+        grid_params_1=aux2,
     )
 
     return solution
+
 
 def random_search_binary_ema(
     LB: List[Any],
@@ -234,7 +239,7 @@ def random_search_binary_ema(
     objective_func: Callable = objective_func_binary_ema,
     loss_func: Callable = mae_loss_function,
     ema_binary_func: Callable = ema.looyenga,
-    inverse_ema_func: Callable = ema.inverse_looyenga, # EMA to recover the physical thickness
+    inverse_ema_func: Callable = ema.inverse_looyenga,  # EMA to recover the physical thickness
     random_seed: int = 1234,
 ) -> NamedTuple:
     """Returns a random search for the input lower and upper bounds, calculating the loss between the experimental and theoretical reflectance, using a binary mixing rule.
@@ -274,13 +279,14 @@ def random_search_binary_ema(
     ) -> NamedTuple:
 
         RandomSearchSolSpace = namedtuple(
-            "RandomSearchSolSpace", [
+            "RandomSearchSolSpace",
+            [
                 "error_surface",
                 "min_error_surface",
                 "optimal_params",
                 "grid_params_0",
                 "grid_params_1",
-            ]
+            ],
         )
 
         return RandomSearchSolSpace(
@@ -298,30 +304,31 @@ def random_search_binary_ema(
     aux2 = LB[1] + rand_nums * (UB[1] - LB[1])
 
     error_surface, min_error_surface, s = _naive_search(
-        aux1 = aux1,
-        aux2 = aux2,
-        objective_func = objective_func,
-        ref_experimental = ref_experimental,
-        n_incident = n_incident,
-        n_substrate = n_substrate,
-        n_void = n_void,
-        n_matrix = n_matrix,
-        beam = beam,
-        ema_binary_func = ema_binary_func,
-        inverse_ema_func = inverse_ema_func,
-        loss_func = loss_func,
+        aux1=aux1,
+        aux2=aux2,
+        objective_func=objective_func,
+        ref_experimental=ref_experimental,
+        n_incident=n_incident,
+        n_substrate=n_substrate,
+        n_void=n_void,
+        n_matrix=n_matrix,
+        beam=beam,
+        ema_binary_func=ema_binary_func,
+        inverse_ema_func=inverse_ema_func,
+        loss_func=loss_func,
     )
 
     solution = _random_search_solution_space(
-        error_surface = error_surface,
-        min_error_surface = min_error_surface,
-        optimal_params = s,
-        grid_params_0 = aux1,
-        grid_params_1 = aux2,
+        error_surface=error_surface,
+        min_error_surface=min_error_surface,
+        optimal_params=s,
+        grid_params_0=aux1,
+        grid_params_1=aux2,
     )
 
     return solution
-   
+
+
 def linear_porosity(*, params: Any, num_layers: int) -> Tuple[Any, Any]:
     """Build the linear porosity array variation in terms of the thickness.
 
@@ -341,16 +348,18 @@ def linear_porosity(*, params: Any, num_layers: int) -> Tuple[Any, Any]:
 
     if len(params) == 3:
 
-        pvec = params[1] \
-            + params[2]*(1.0 - np.linspace(1, num_layers, num = num_layers)/num_layers)
+        pvec = params[1] + params[2] * (
+            1.0 - np.linspace(1, num_layers, num=num_layers) / num_layers
+        )
 
-        dvec = np.ones(num_layers)*params[0]/num_layers
+        dvec = np.ones(num_layers) * params[0] / num_layers
 
         return pvec, dvec
 
     raise ValueError(
         "the input params should have three values: thickness, fraction and alpha parameters."
     )
+
 
 def objective_func_binary_ema_fraction_gradient(
     *,
@@ -386,9 +395,9 @@ def objective_func_binary_ema_fraction_gradient(
         float: Cost of the objective function.
     """
 
-    pvec, dvec = gradient_function(params = params, num_layers = num_layers)
+    pvec, dvec = gradient_function(params=params, num_layers=num_layers)
 
-    reflectance = np.zeros(len(beam.wavelength), dtype = np.float)
+    reflectance = np.zeros(len(beam.wavelength), dtype=np.float)
     for w in range(len(beam.wavelength)):
 
         # Build the layer system
@@ -405,22 +414,21 @@ def objective_func_binary_ema_fraction_gradient(
             # Build layer system
             layers.append(
                 tmmo_layer(
-                    index_refraction = N,
-                    thickness = d,
+                    index_refraction=N,
+                    thickness=d,
                 )
             )
 
         reflectance[w] = reflectance_layered(
-            layers = layers,
-            beam = beam_parameters(
-                wavelength = beam.wavelength[w],
-                angle_inc_degree = beam.angle_inc_degrees,
-                polarisation = beam.polarisation,
-                wavelength_0 = beam.wavelength_0,
+            layers=layers,
+            beam=beam_parameters(
+                wavelength=beam.wavelength[w],
+                angle_inc_degree=beam.angle_inc_degrees,
+                polarisation=beam.polarisation,
+                wavelength_0=beam.wavelength_0,
             ),
         )
 
     cost = loss_func(reflectance, ref_experimental)
 
     return cost
-

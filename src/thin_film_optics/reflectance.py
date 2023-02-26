@@ -4,13 +4,13 @@
 from typing import Any, NamedTuple, Tuple, List, Callable
 import numpy as np
 
-from src.thin_film_optics import effective_medium_models as ema
-from src.thin_film_optics import refractive_index_database as ridb
+from . import effective_medium_models as ema
+from . import refractive_index_database as ridb
 
-from src.thin_film_optics.transfer_matrix_method import TMMOptics
+from .transfer_matrix_method import TMMOptics
 
 
-FOURPI = 4.0*np.pi
+FOURPI = 4.0 * np.pi
 
 
 def reflectance_fresnel_binary_ema(
@@ -48,25 +48,35 @@ def reflectance_fresnel_binary_ema(
 
     # Calculation of the angle of incidence inside each media with Snell law of refraction
     cos_angle_inc_0 = np.cos(beam.angle_inc_radians)
-    cos_angle_inc_1 = snell_cosine_law(n_incident, n_effective, cos_angle_inc_0) # bulk
-    cos_angle_inc_2 = snell_cosine_law(n_effective, n_substrate, cos_angle_inc_1) # substrate
+    cos_angle_inc_1 = snell_cosine_law(n_incident, n_effective, cos_angle_inc_0)  # bulk
+    cos_angle_inc_2 = snell_cosine_law(
+        n_effective, n_substrate, cos_angle_inc_1
+    )  # substrate
 
     # Fresnel coefficients of reflection for both polarizations
     rp01 = fresnel_coefficient(
-        n_incident, cos_angle_inc_1,
-        n_effective, cos_angle_inc_0,
+        n_incident,
+        cos_angle_inc_1,
+        n_effective,
+        cos_angle_inc_0,
     )
     rp12 = fresnel_coefficient(
-        n_effective, cos_angle_inc_2,
-        n_substrate, cos_angle_inc_1,
+        n_effective,
+        cos_angle_inc_2,
+        n_substrate,
+        cos_angle_inc_1,
     )
     rs01 = fresnel_coefficient(
-        n_incident, cos_angle_inc_0,
-        n_effective, cos_angle_inc_1,
+        n_incident,
+        cos_angle_inc_0,
+        n_effective,
+        cos_angle_inc_1,
     )
     rs12 = fresnel_coefficient(
-        n_effective, cos_angle_inc_1,
-        n_substrate, cos_angle_inc_2,
+        n_effective,
+        cos_angle_inc_1,
+        n_substrate,
+        cos_angle_inc_2,
     )
 
     phase_shift_ = phase_shift(
@@ -78,15 +88,15 @@ def reflectance_fresnel_binary_ema(
     )
 
     # Complex reflectance
-    exp_phase_shift = np.exp(1j*phase_shift_)
-    Ap, As = rp12*exp_phase_shift, rs12*exp_phase_shift
-    rp012 = (rp01 + Ap)/(1.0 + rp01*Ap)
-    rs012 = (rs01 + As)/(1.0 + rs01*As)
+    exp_phase_shift = np.exp(1j * phase_shift_)
+    Ap, As = rp12 * exp_phase_shift, rs12 * exp_phase_shift
+    rp012 = (rp01 + Ap) / (1.0 + rp01 * Ap)
+    rs012 = (rs01 + As) / (1.0 + rs01 * As)
 
     # Reflectance
-    refp, refs = (rp012*np.conj(rp012)).real, (rs012*np.conj(rs012)).real
+    refp, refs = (rp012 * np.conj(rp012)).real, (rs012 * np.conj(rs012)).real
 
-    return ((1.0 - beam.polarisation)*refs) + (beam.polarisation*refp)
+    return ((1.0 - beam.polarisation) * refs) + (beam.polarisation * refp)
 
 
 def fresnel_coefficient(
@@ -139,7 +149,9 @@ def snell_cosine_law(
     >>> np.rad2deg(theta_2)
     9.935883740482216
     """
-    return np.sqrt(1.0 - (index_refraction_1/index_refraction_2)**2*(1.0 - cos_angle**2))
+    return np.sqrt(
+        1.0 - (index_refraction_1 / index_refraction_2) ** 2 * (1.0 - cos_angle**2)
+    )
 
 
 def normalize_experimental_reflectance(
@@ -180,7 +192,7 @@ def reflectance_layered(
     Returns:
         (ndarray): reflectance of the input structure.
     """
-    tmm_optics = TMMOptics(beam = beam, layers = layers)
+    tmm_optics = TMMOptics(beam=beam, layers=layers)
     tmm_optics.tmm_spectra()
     return (
         tmm_optics._spectra.reflectance_p,
@@ -208,7 +220,8 @@ def phase_shift(
     Returns:
         (ndarray): phase shift.
     """
-    return constant*thickness*index_refraction*cos_angle_inc/wavelength
+    return constant * thickness * index_refraction * cos_angle_inc / wavelength
+
 
 def admittance_p(index_refraction: Any, cosangle: Any) -> Any:
     """Admittance of p-wave.
@@ -221,7 +234,8 @@ def admittance_p(index_refraction: Any, cosangle: Any) -> Any:
         adm_p (ndarray, complex): admittance of p-wave
     """
     _check_admittance_angle_index_array(index_refraction, cosangle)
-    return index_refraction/cosangle
+    return index_refraction / cosangle
+
 
 def admittance_s(index_refraction: Any, cosangle: Any) -> Any:
     """Admittance of s-wave.
@@ -234,7 +248,8 @@ def admittance_s(index_refraction: Any, cosangle: Any) -> Any:
         adm_s (ndarray, complex): admittance of s-wave
     """
     _check_admittance_angle_index_array(index_refraction, cosangle)
-    return index_refraction*cosangle
+    return index_refraction * cosangle
+
 
 def _check_admittance_angle_index_array(n: Any, a: Any) -> Any:
     assert len(n) == len(a), "index of refraction and angle lengths must match"

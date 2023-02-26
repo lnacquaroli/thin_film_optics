@@ -9,24 +9,25 @@ import logging
 
 import numpy as np
 
-from src.helpers.reflectance_utils import snell_cosine_law
-from src.helpers.reflectance_utils import phase_shift
-from src.helpers.reflectance_utils import admittance_p, admittance_s
+from .reflectance import snell_cosine_law
+from .reflectance import phase_shift
+from .reflectance import admittance_p, admittance_s
 
 from src.helpers.utils import _neg_eps_finfo
-#from beam_parameters import beam_parameters
-#from layer_information import tmmo_layer
+
+# from beam_parameters import beam_parameters
+# from layer_information import tmmo_layer
 
 
 logger = logging.getLogger(__name__)
 
 
 # Constants
-TWOPI = 2.0*np.pi
+TWOPI = 2.0 * np.pi
 NEG_EPS = _neg_eps_finfo()
 
 
-class TMMOptics():
+class TMMOptics:
     """Constructs the structure of the simulation and provides methods for it.
 
     After building your beam parameters and the created a list of layers, you can pass them to this class constructor.
@@ -88,7 +89,7 @@ class TMMOptics():
 
         for i, x in enumerate(self._layers):
             # n_wavelength_0 depending on the input
-            if np.allclose(x.n_wavelength_0, NEG_EPS): # not specified
+            if np.allclose(x.n_wavelength_0, NEG_EPS):  # not specified
                 n_wavelength_0[i] = np.real(
                     x.index_refraction[self._beam.wavelength_0_index],
                 )
@@ -97,7 +98,7 @@ class TMMOptics():
             # Build thickness depending on the input
             physical_thickness[i] = x.thickness
             if x.layer_type == "OT":
-                physical_thickness[i] *= self._beam.wavelength_0/n_wavelength_0[i]
+                physical_thickness[i] *= self._beam.wavelength_0 / n_wavelength_0[i]
 
         self._n_wavelength_0 = n_wavelength_0
         self._physical_thickness = physical_thickness
@@ -114,7 +115,9 @@ class TMMOptics():
         len_ang_inc, len_wavelength, num_layers = self._initialize_lengths()
         ts, tp, rs, rp = self._initialize_coefficients(len_wavelength, len_ang_inc)
         delta, adm_p, adm_s = self._initialize_admittance_phase(
-            len_wavelength, len_ang_inc, num_layers,
+            len_wavelength,
+            len_ang_inc,
+            num_layers,
         )
         Ms, Mp, I = self._initialize_matrices()
         cosphi, n = self._initialize_cosphi_index(num_layers)
@@ -122,11 +125,21 @@ class TMMOptics():
         for l, wavelen in enumerate(self._beam.wavelength):
             for a in range(len_ang_inc):
                 cosphi[0] = np.cos(self._beam.angle_inc_radians[a])
-                adm_s[l, a, :], adm_p[l, a, :], delta[l, a, :], Ms, Mp = self._complete_transfer_matrix(cosphi, l, wavelen, I, n)
+                (
+                    adm_s[l, a, :],
+                    adm_p[l, a, :],
+                    delta[l, a, :],
+                    Ms,
+                    Mp,
+                ) = self._complete_transfer_matrix(cosphi, l, wavelen, I, n)
                 # calculation of the spectra
                 rs[l, a], rp[l, a], ts[l, a], tp[l, a] = self._r_t_coefficients(
-                    adm_s[l, a, 0], adm_s[l, a, num_layers], Ms,
-                    adm_p[l, a, 0], adm_p[l, a, num_layers], Mp,
+                    adm_s[l, a, 0],
+                    adm_s[l, a, num_layers],
+                    Ms,
+                    adm_p[l, a, 0],
+                    adm_p[l, a, num_layers],
+                    Mp,
                 )
 
         self = self._save_spectra_data(adm_p, adm_s, tp, ts, rp, rs)
@@ -148,7 +161,7 @@ class TMMOptics():
         return (
             len(self._beam.angle_inc_radians),
             len(self._beam.wavelength),
-            len(self._layers) - 1, # number of layers in the structure
+            len(self._layers) - 1,  # number of layers in the structure
         )
 
     def _initialize_coefficients(
@@ -222,7 +235,11 @@ class TMMOptics():
 
         # phase shifts for each layer: 2*pi = 6.283185307179586
         delta = phase_shift(
-            TWOPI, n, self._physical_thickness, cosphi, wavelen,
+            TWOPI,
+            n,
+            self._physical_thickness,
+            cosphi,
+            wavelen,
         ).reshape(-1)
 
         adm_s, adm_p = admittance_s(n, cosphi), admittance_p(n, cosphi)
@@ -275,11 +292,11 @@ class TMMOptics():
         Returns:
             Q: 2x2 transfer matrix
         """
-        cos_beta, sin_beta = np.cos(beta), -1j*np.sin(beta)
+        cos_beta, sin_beta = np.cos(beta), -1j * np.sin(beta)
         Q = np.array(
             [
-                [cos_beta, sin_beta/adm],
-                [adm*sin_beta, cos_beta],
+                [cos_beta, sin_beta / adm],
+                [adm * sin_beta, cos_beta],
             ],
         )
 
@@ -312,19 +329,19 @@ class TMMOptics():
         """
 
         def _reflection_coefficient(M, adm_0, adm_m_M01, adm_m_M11):
-            b, c, d = M[1,0]/adm_0, adm_m_M01, adm_m_M11/adm_0
+            b, c, d = M[1, 0] / adm_0, adm_m_M01, adm_m_M11 / adm_0
             bpd = b + d
-            r = (M[0,0] - bpd + c)/(M[0,0] + bpd + c)
+            r = (M[0, 0] - bpd + c) / (M[0, 0] + bpd + c)
             return r
 
         def _transmission_coefficient(M, adm_0, adm_m_M01, adm_m_M11):
-            t = 2.0/(adm_0*M[0,0] + M[1, 0] + adm_0*adm_m_M01 + adm_m_M11)
+            t = 2.0 / (adm_0 * M[0, 0] + M[1, 0] + adm_0 * adm_m_M01 + adm_m_M11)
             return t
 
-        adm_p_m_Mp01 = adm_p_m*Mp[0, 1]
-        adm_s_m_Ms01 = adm_s_m*Ms[0, 1]
-        adm_p_m_Mp11 = adm_p_m*Mp[1, 1]
-        adm_s_m_Ms11 = adm_s_m*Ms[1, 1]
+        adm_p_m_Mp01 = adm_p_m * Mp[0, 1]
+        adm_s_m_Ms01 = adm_s_m * Ms[0, 1]
+        adm_p_m_Mp11 = adm_p_m * Mp[1, 1]
+        adm_s_m_Ms11 = adm_s_m * Ms[1, 1]
 
         rs = _reflection_coefficient(Ms, adm_s_0, adm_s_m_Ms01, adm_s_m_Ms11)
         rp = _reflection_coefficient(Mp, adm_p_0, adm_p_m_Mp01, adm_p_m_Mp11)
@@ -369,17 +386,24 @@ class TMMOptics():
                 "transmittance_p",
                 "transmittance_s",
                 "transmittance",
-            ]
+            ],
         )
-        Rp, Rs = np.abs(rp)**2, np.abs(rs)**2
-        R = (1.0 - self._beam.polarisation)*Rs + self._beam.polarisation*Rp
-        Tp = np.real(adm_p[:, :, 0]*adm_p[:, :, -1])*np.abs(tp)**2
-        Ts = np.real(adm_s[:, :, 0]*adm_s[:, :, -1])*np.abs(ts)**2
-        T = (1.0 - self._beam.polarisation)*Ts + self._beam.polarisation*Tp
+        Rp, Rs = np.abs(rp) ** 2, np.abs(rs) ** 2
+        R = (1.0 - self._beam.polarisation) * Rs + self._beam.polarisation * Rp
+        Tp = np.real(adm_p[:, :, 0] * adm_p[:, :, -1]) * np.abs(tp) ** 2
+        Ts = np.real(adm_s[:, :, 0] * adm_s[:, :, -1]) * np.abs(ts) ** 2
+        T = (1.0 - self._beam.polarisation) * Ts + self._beam.polarisation * Tp
         self._spectra = Spectra(
-            rp, rs, tp, ts,
-            Rp, Rs, R,
-            Tp, Ts, T,
+            rp,
+            rs,
+            tp,
+            ts,
+            Rp,
+            Rs,
+            R,
+            Tp,
+            Ts,
+            T,
         )
 
         return self
@@ -410,7 +434,9 @@ class TMMOptics():
             ],
         )
         self._phase_admittance = PhaseAdmittance(
-            admp, adms, delta,
+            admp,
+            adms,
+            delta,
         )
 
         return self
@@ -452,7 +478,9 @@ class TMMOptics():
         len_ang_inc, len_wavelength, num_layers = self._initialize_lengths()
         # ts, tp, rs, rp = self._initialize_coefficients(len_wavelength, len_ang_inc)
         delta, adm_p, adm_s = self._initialize_admittance_phase(
-            len_wavelength, len_ang_inc, num_layers,
+            len_wavelength,
+            len_ang_inc,
+            num_layers,
         )
         Ms, Mp, I = self._initialize_matrices()
         cosphi, n = self._initialize_cosphi_index(num_layers)
@@ -461,9 +489,19 @@ class TMMOptics():
         for l, wavelen in enumerate(self._beam.wavelength):
             for a in range(len_ang_inc):
                 cosphi[0] = np.cos(self._beam.angle_inc_radians[a])
-                adm_s[l, a, :], adm_p[l, a, :], delta[l, a, :], Ms, Mp = self._complete_transfer_matrix(cosphi, l, wavelen, I, n)
-                emfs[l, a, :] = self._emfield(delta[l, a, :], adm_s[l, a, :], Ms, num_layers + 1)
-                emfp[l, a, :] = self._emfield(delta[l, a, :], adm_p[l, a, :], Mp, num_layers + 1)
+                (
+                    adm_s[l, a, :],
+                    adm_p[l, a, :],
+                    delta[l, a, :],
+                    Ms,
+                    Mp,
+                ) = self._complete_transfer_matrix(cosphi, l, wavelen, I, n)
+                emfs[l, a, :] = self._emfield(
+                    delta[l, a, :], adm_s[l, a, :], Ms, num_layers + 1
+                )
+                emfp[l, a, :] = self._emfield(
+                    delta[l, a, :], adm_p[l, a, :], Mp, num_layers + 1
+                )
 
         self = self._save_emf_data(emfs, emfp)
         self = self._save_phase_admittance(adm_p, adm_s, delta)
@@ -489,16 +527,16 @@ class TMMOptics():
             field_intensity (ndarray): amplitude of the EMF
         """
         m0 = np.zeros((2, 2), dtype=complex)
-        m1 = np.eye(2, 2, dtype=complex) # Identity 2x2 matrix
-        g11 = np.zeros((numlay - 2)*self._num_layers_split, dtype=complex)
+        m1 = np.eye(2, 2, dtype=complex)  # Identity 2x2 matrix
+        g11 = np.zeros((numlay - 2) * self._num_layers_split, dtype=complex)
         g12 = g11.copy()
 
         # Divide the phase shift by num_layers_split but keep adm as is for each layer
-        m_delta = delta/self._num_layers_split
+        m_delta = delta / self._num_layers_split
         for c in range(1, numlay - 1):
             _m1 = self._inverse_tmatrix(m_delta[c], adm[c])
             for j in range(self._num_layers_split):
-                k = self._num_layers_split*(c - 1) + j
+                k = self._num_layers_split * (c - 1) + j
                 m1 = np.matmul(_m1, m1)
                 m0 = np.matmul(m1, M)
                 g11[k] = m0[0, 0]
@@ -518,11 +556,13 @@ class TMMOptics():
         Returns:
             Xi: inverse matrix
         """
-        cos_beta, sin_beta = np.cos(beta), 1j*np.sin(beta)
-        Xi = np.array([
-            [cos_beta, sin_beta/adm],
-            [adm*sin_beta, cos_beta],
-        ])
+        cos_beta, sin_beta = np.cos(beta), 1j * np.sin(beta)
+        Xi = np.array(
+            [
+                [cos_beta, sin_beta / adm],
+                [adm * sin_beta, cos_beta],
+            ]
+        )
 
         return Xi
 
@@ -539,10 +579,21 @@ class TMMOptics():
         Returns:
             field_intensity: Field intensity
         """
-        fi = np.abs(
-            (g11 + adm_m*g12) \
-            /(0.25*(adm_0*M[0, 0] + M[1, 0] + adm_0*adm_m*M[0,1] + adm_m*M[1,1]))
-        )**2
+        fi = (
+            np.abs(
+                (g11 + adm_m * g12)
+                / (
+                    0.25
+                    * (
+                        adm_0 * M[0, 0]
+                        + M[1, 0]
+                        + adm_0 * adm_m * M[0, 1]
+                        + adm_m * M[1, 1]
+                    )
+                )
+            )
+            ** 2
+        )
 
         return fi
 
@@ -558,9 +609,11 @@ class TMMOptics():
         thicknesses = self._physical_thickness[1:-1]
         thicknesses = thicknesses.reshape(len(thicknesses), 1)
         # outer product
-        l = (thicknesses/self._num_layers_split)*np.ones((1, self._num_layers_split))
+        l = (thicknesses / self._num_layers_split) * np.ones(
+            (1, self._num_layers_split)
+        )
         l = np.insert(l, 0, 0)
-        l = np.cumsum(l)[:-1] # remove last from cumsum
+        l = np.cumsum(l)[:-1]  # remove last from cumsum
 
         return l
 
@@ -575,7 +628,11 @@ class TMMOptics():
             emfs, emfp: placeholders for the EMF arrays.
         """
         emfs = np.zeros(
-            (len_wavelength, len_ang_inc, (len(self._layers) - 2)*self._num_layers_split),
+            (
+                len_wavelength,
+                len_ang_inc,
+                (len(self._layers) - 2) * self._num_layers_split,
+            ),
         )
         emfp = emfs.copy()
 
@@ -650,7 +707,9 @@ class TMMOptics():
         len_ang_inc, len_wavelength, num_layers = self._initialize_lengths()
         ts, tp, rs, rp = self._initialize_coefficients(len_wavelength, len_ang_inc)
         delta, adm_p, adm_s = self._initialize_admittance_phase(
-            len_wavelength, len_ang_inc, num_layers,
+            len_wavelength,
+            len_ang_inc,
+            num_layers,
         )
         Ms, Mp, I = self._initialize_matrices()
         cosphi, n = self._initialize_cosphi_index(num_layers)
@@ -659,14 +718,28 @@ class TMMOptics():
         for l, wavelen in enumerate(self._beam.wavelength):
             for a in range(len_ang_inc):
                 cosphi[0] = np.cos(self._beam.angle_inc_radians[a])
-                adm_s[l, a, :], adm_p[l, a, :], delta[l, a, :], Ms, Mp = self._complete_transfer_matrix(cosphi, l, wavelen, I, n)
+                (
+                    adm_s[l, a, :],
+                    adm_p[l, a, :],
+                    delta[l, a, :],
+                    Ms,
+                    Mp,
+                ) = self._complete_transfer_matrix(cosphi, l, wavelen, I, n)
                 # calculation of the spectra
                 rs[l, a], rp[l, a], ts[l, a], tp[l, a] = self._r_t_coefficients(
-                    adm_s[l, a, 0], adm_s[l, a, num_layers], Ms,
-                    adm_p[l, a, 0], adm_p[l, a, num_layers], Mp,
+                    adm_s[l, a, 0],
+                    adm_s[l, a, num_layers],
+                    Ms,
+                    adm_p[l, a, 0],
+                    adm_p[l, a, num_layers],
+                    Mp,
                 )
-                emfs[l, a, :] = self._emfield(delta[l, a, :], adm_s[l, a, :], Ms, num_layers + 1)
-                emfp[l, a, :] = self._emfield(delta[l, a, :], adm_p[l, a, :], Mp, num_layers + 1)
+                emfs[l, a, :] = self._emfield(
+                    delta[l, a, :], adm_s[l, a, :], Ms, num_layers + 1
+                )
+                emfp[l, a, :] = self._emfield(
+                    delta[l, a, :], adm_p[l, a, :], Mp, num_layers + 1
+                )
 
         self = self._save_spectra_data(adm_p, adm_s, tp, ts, rp, rs)
         self = self._save_phase_admittance(adm_p, adm_s, delta)
@@ -688,7 +761,7 @@ class TMMOptics():
                 omega_l
         """
 
-        assert(len(self._layers) > 3), "the number of layers must be greater than 3."
+        assert len(self._layers) > 3, "the number of layers must be greater than 3."
 
         if not self.__pbg_calculated:
             d = self._physical_thickness[1:3]
@@ -698,7 +771,7 @@ class TMMOptics():
             ]
 
             self._crystal_period = np.sum(d)
-            self._wavevector_qz = np.sin(self._beam.angle_inc_radians)*np.pi/2.0
+            self._wavevector_qz = np.sin(self._beam.angle_inc_radians) * np.pi / 2.0
 
             self = self._photonic_dispersion(d, n)
             self = self._omega_h_l(d)
@@ -721,13 +794,13 @@ class TMMOptics():
         """
 
         def _adm_factor(adm_0, adm_1):
-            #x = 0.5*(adm_0**2 + adm_1**2)/adm_0/adm_1
-            r = adm_0/adm_1
-            x = 0.5*(r + (1.0/r))
+            # x = 0.5*(adm_0**2 + adm_1**2)/adm_0/adm_1
+            r = adm_0 / adm_1
+            x = 0.5 * (r + (1.0 / r))
             return x
 
         def _bloch_wavevector(a0, a1, f):
-            x = np.arccos(np.cos(a0)*np.cos(a1) - f*np.sin(a0)*np.sin(a1))
+            x = np.arccos(np.cos(a0) * np.cos(a1) - f * np.sin(a0) * np.sin(a1))
             return x
 
         def _remove_nans(kappa):
@@ -741,32 +814,36 @@ class TMMOptics():
 
         kpr, kpi, ksr, ksi = _initialize_wavevectors(self)
 
-        self._omega = 2.0*np.pi/self._beam.wavelength # Angular frequency
+        self._omega = 2.0 * np.pi / self._beam.wavelength  # Angular frequency
 
         # Angle of incidence of the second layer with Snell's law of cosine
         cosphi_0 = np.cos(self._beam.angle_inc_radians)
         cosphi_1 = np.array([snell_cosine_law(n[0], n[1], a) for a in cosphi_0])
 
         # Prefactor for Bloch wavevector
-        factor_s = _adm_factor(admittance_s(n[0], cosphi_0), admittance_s(n[1], cosphi_1))
-        factor_p = _adm_factor(admittance_p(n[0], cosphi_0), admittance_p(n[1], cosphi_1))
+        factor_s = _adm_factor(
+            admittance_s(n[0], cosphi_0), admittance_s(n[1], cosphi_1)
+        )
+        factor_p = _adm_factor(
+            admittance_p(n[0], cosphi_0), admittance_p(n[1], cosphi_1)
+        )
         fsr, fsi = np.real(factor_s), np.imag(factor_s)
         fpr, fpi = np.real(factor_p), np.imag(factor_p)
 
         # Bloch wavevectors: I split into real and imag because the arccos seems to have a problem with complexes. It is better but not solved this way.
-        const_0 = d[0]*n[0]*cosphi_0
-        const_1 = d[1]*n[1]*cosphi_1
+        const_0 = d[0] * n[0] * cosphi_0
+        const_1 = d[1] * n[1] * cosphi_1
         for a in range(len(cosphi_1)):
             for b in range(len(self._omega)):
-                a0 = const_0[a]*self._omega[b]
-                a1 = const_1[a]*self._omega[b]
+                a0 = const_0[a] * self._omega[b]
+                a1 = const_1[a] * self._omega[b]
                 kpr[b, a] = _bloch_wavevector(a0, a1, fpr[a])
                 ksr[b, a] = _bloch_wavevector(a0, a1, fsr[a])
                 kpi[b, a] = _bloch_wavevector(a0, a1, fpi[a])
                 ksi[b, a] = _bloch_wavevector(a0, a1, fsi[a])
 
-        kp = kpr + kpi*1j
-        ks = ksr + ksi*1j
+        kp = kpr + kpi * 1j
+        ks = ksr + ksi * 1j
         kp, ks = _remove_nans(kp), _remove_nans(ks)
 
         self = self._save_bloch_data(kp, ks)
@@ -811,20 +888,23 @@ class TMMOptics():
         """
         n0, n1, n2 = self._n_wavelength_0[0:3]
 
-        num_pi = self._crystal_period/np.pi
+        num_pi = self._crystal_period / np.pi
         n0sq, n1sq, n2sq = n0**2, n1**2, n2**2
         n1sq_minus_n0sq = n1sq - n0sq
         n2sq_minus_n0sq = n2sq - n0sq
         sqrt_n2sq_minus_n0sq = np.sqrt(n2sq_minus_n0sq)
         sqrt_n1sq_minus_n0sq = np.sqrt(n1sq_minus_n0sq)
-        num_0 = d[1]*np.sqrt(n2sq_minus_n0sq) + d[0]*np.sqrt(n1sq_minus_n0sq)
+        num_0 = d[1] * np.sqrt(n2sq_minus_n0sq) + d[0] * np.sqrt(n1sq_minus_n0sq)
         num_1 = np.abs(
-            (n1sq*sqrt_n2sq_minus_n0sq - n2sq*sqrt_n1sq_minus_n0sq)/(n1sq*sqrt_n2sq_minus_n0sq + n2sq*sqrt_n1sq_minus_n0sq)
+            (n1sq * sqrt_n2sq_minus_n0sq - n2sq * sqrt_n1sq_minus_n0sq)
+            / (n1sq * sqrt_n2sq_minus_n0sq + n2sq * sqrt_n1sq_minus_n0sq)
         )
 
-        self._omega_h = num_pi/(d[0]*n1 + d[1]*n2)*np.arccos(-np.abs(n1 - n2)/(n1 + n2))
+        self._omega_h = (
+            num_pi / (d[0] * n1 + d[1] * n2) * np.arccos(-np.abs(n1 - n2) / (n1 + n2))
+        )
 
-        self._omega_l = num_pi/num_0*np.arccos(num_1)
+        self._omega_l = num_pi / num_0 * np.arccos(num_1)
 
         return self
 
@@ -857,7 +937,3 @@ class TMMOptics():
     def misc(self):
         """The phase shift, delta, and others results."""
         return self._misc
-
-
-
-
