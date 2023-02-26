@@ -125,6 +125,7 @@ def test_tmmo_layer_n_wavelength_0_array_complex():
 
 
 def test_tmm_optics_layers_list_length():
+    """_summary_"""
     silicon = np.array([3.4, 3.4, 3.4, 3.4, 3.4], dtype=complex)
     glass = np.array([1.5, 1.5, 1.5, 1.5, 1.5], dtype=complex)
     air = np.array([1.0, 1.0, 1.0, 1.0, 1.0], dtype=complex)

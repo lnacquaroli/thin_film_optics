@@ -7,7 +7,8 @@ from src.thin_film_optics.beam_parameters import beam_parameters
 
 
 def test_beam_parameters_scalars():
-    """Tests the creation of the namedtuple with scalars in wavelength and angle of incidence."""
+    """Tests the creation of the namedtuple with scalars in wavelength and angle of
+    incidence."""
     wavelength = 400
     angle = 15
     polarisation = 1.0
@@ -26,7 +27,8 @@ def test_beam_parameters_scalars():
 
 
 def test_beam_parameters_arrays():
-    """Tests the creation of the namedtuple with arrays in wavelength and angle of incidence."""
+    """Tests the creation of the namedtuple with arrays in wavelength and angle of
+    incidence."""
     wavelength = np.array([400, 500, 600, 700, 800, 900])
     angle = np.array([0, 5, 10, 15, 20, 25, 30])
     polarisation = 0.5
@@ -45,7 +47,8 @@ def test_beam_parameters_arrays():
 
 
 def test_beam_parameters_arrays_reference_wavelength():
-    """Tests the creation of the namedtuple with arrays in wavelength and angle of incidence, with a reference wavelength."""
+    """Tests the creation of the namedtuple with arrays in wavelength and angle of
+    incidence, with a reference wavelength."""
     wavelength = np.array([400, 500, 600, 700, 800, 900])
     angle = np.array([0, 5, 10, 15, 20, 25, 30])
     polarisation = 0.5
@@ -66,7 +69,8 @@ def test_beam_parameters_arrays_reference_wavelength():
 
 
 def test_beam_parameters_range():
-    """Tests the creation of the namedtuple with ranges in wavelength and angle of incidence."""
+    """Tests the creation of the namedtuple with ranges in wavelength and angle of
+    incidence."""
     wavelength = range(400, 901)
     angle = range(0, 21)
     polarisation = 0.5

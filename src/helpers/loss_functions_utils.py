@@ -28,4 +28,4 @@ def mse_loss_function(array_1: Any, array_2: Any) -> Any:
     Returns:
         (float) : mse loss value.
     """
-    return np.mean((array_1 - array_2)**2)
+    return np.mean((array_1 - array_2) ** 2)

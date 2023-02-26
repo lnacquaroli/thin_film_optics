@@ -5,7 +5,8 @@ from typing import Any, NamedTuple, Tuple, List, Callable
 import numpy as np
 
 from . import effective_medium_models as ema
-from . import refractive_index_database as ridb
+
+from src.helpers.utils import snell_cosine_law, phase_shift
 
 from .transfer_matrix_method import TMMOptics
 
@@ -24,21 +25,29 @@ def reflectance_fresnel_binary_ema(
     ema_binary_func: Callable = ema.looyenga,
     inverse_ema_func: Callable = ema.inverse_looyenga,
 ) -> Any:
-    """Calculates the reflection spectrum of a thin film single layer deposited on a substrate.
-    It uses the binary Looyenga model for the calculation of the index of refraction as default.
-    It computes the polarisation averaged reflectance for a given angle of incidence other than zero.
+    """Calculates the reflection spectrum of a thin film single layer deposited on a
+    substrate.
+    It uses the binary Looyenga model for the calculation of the index of refraction as
+    default.
+    It computes the polarisation averaged reflectance for a given angle of incidence other
+    than zero.
 
     Args:
         params (ndarray): initial guesses of the paramters to fit.
             params[0] -> thickness in nanometers
             params[1] -> porosity in range (0, 1)
         beam (namedtuple): beam parameters
-        n_incident (ndarray): index of refraction of the incident medium as a function of wavelengths
-        n_substrate (ndarray): index of refraction of the substrate medium as a function of wavelengths
-        n_void (ndarray): index of refraction of the void medium as a function of wavelengths inside the effective medium
-        n_matrix (ndarray): index of refraction of the matrix medium as a function of wavelengths inside the effective medium
+        n_incident (ndarray): index of refraction of the incident medium as a function of
+        wavelengths
+        n_substrate (ndarray): index of refraction of the substrate medium as a function of
+        wavelengths
+        n_void (ndarray): index of refraction of the void medium as a function of
+        wavelengths inside the effective medium
+        n_matrix (ndarray): index of refraction of the matrix medium as a function of
+        wavelengths inside the effective medium
         ema_binary_func (Callable): effective medium approximation (default: looyenga)
-        inverse_ema_func (Callable): inverse of ema_binary_func to retrieve the physical thickness (default: inverse_looyenga)
+        inverse_ema_func (Callable): inverse of ema_binary_func to retrieve the physical
+        thickness (default: inverse_looyenga)
 
     Returns:
         (ndarray): Polarisation averaged reflectance spectrum.
@@ -121,39 +130,6 @@ def fresnel_coefficient(
     return (prod_1 - prod_2) / (prod_1 + prod_2)
 
 
-def snell_cosine_law(
-    index_refraction_1: Any,
-    index_refraction_2: Any,
-    cos_angle: Any,
-) -> Any:
-    """Snell's law in cosine form. Returns the cosine already.
-
-    Args:
-        index_refraction_1 (ndarray): index of refraction of medium 1
-        index_refraction_2 (ndarray): index of refraction of medium 2
-        cos_angle (float): cosine of angle of incidence of medium 1
-
-    Returns:
-        (float): cosine of angle of refraction in medium 2
-
-    Examples:
-    >>> n_1, n_2 = 1.0, 1.5
-    >>> theta = np.deg2rad(15)
-    >>> cos_theta = np.cos(theta)
-    >>> cos_theta_2 = snell_cosine_law(n_1, n_2, cos_theta)
-    >>> cos_theta_2
-    0.9850014555865657
-    >>> theta_2 = np.arccos(cos_theta_2)
-    >>> theta_2
-    0.17341388536678448
-    >>> np.rad2deg(theta_2)
-    9.935883740482216
-    """
-    return np.sqrt(
-        1.0 - (index_refraction_1 / index_refraction_2) ** 2 * (1.0 - cos_angle**2)
-    )
-
-
 def normalize_experimental_reflectance(
     *,
     ref_spectrum: Any,
@@ -199,57 +175,3 @@ def reflectance_layered(
         tmm_optics._spectra.reflectance_s,
         tmm_optics._spectra.reflectance,
     )
-
-
-def phase_shift(
-    constant: float,
-    thickness: float,
-    index_refraction: complex,
-    cos_angle_inc: complex,
-    wavelength: float,
-) -> complex:
-    """Calculates the phase shift.
-
-    Args:
-        constant (float): 2*pi or 4*pi depending on the method.
-        thickness (float): thickness of the layer.
-        index_refraction (ndarray): index of refraction of the layer.
-        cos_angle_inc (float): cosine of the angle of incidence to the layer.
-        wavelength (ndarray): wavelength array.
-
-    Returns:
-        (ndarray): phase shift.
-    """
-    return constant * thickness * index_refraction * cos_angle_inc / wavelength
-
-
-def admittance_p(index_refraction: Any, cosangle: Any) -> Any:
-    """Admittance of p-wave.
-
-    Args:
-        index_refraction (ndarray, complex): index of refraction
-        cosangle (ndarray, complex): cosine of angle of incidence
-
-    Returns:
-        adm_p (ndarray, complex): admittance of p-wave
-    """
-    _check_admittance_angle_index_array(index_refraction, cosangle)
-    return index_refraction / cosangle
-
-
-def admittance_s(index_refraction: Any, cosangle: Any) -> Any:
-    """Admittance of s-wave.
-
-    Args:
-        index_refraction (ndarray, complex): index of refraction
-        cosangle (ndarray, complex): cosine of angle of incidence
-
-    Returns:
-        adm_s (ndarray, complex): admittance of s-wave
-    """
-    _check_admittance_angle_index_array(index_refraction, cosangle)
-    return index_refraction * cosangle
-
-
-def _check_admittance_angle_index_array(n: Any, a: Any) -> Any:
-    assert len(n) == len(a), "index of refraction and angle lengths must match"

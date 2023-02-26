@@ -1,6 +1,7 @@
 """Main module for the optimisation of multilayers.
 
-- Most of the functions are customized to binary 1d photonic crystals with two layers.
+- Most of the functions are customized to binary 1d photonic crystals with two
+layers.
 - Some functionality for Fabry-Perot type offered also.
 """
 
@@ -8,7 +9,7 @@ from typing import Any, NamedTuple, Callable
 
 import numpy as np
 
-from ..helpers.loss_functions_utils import mae_loss_function, mse_loss_function
+from ..helpers.loss_functions_utils import mae_loss_function  # , mse_loss_function
 
 from .layer_information import tmmo_layer
 from .beam_parameters import beam_parameters
@@ -30,10 +31,12 @@ def objective_func_binary_ema_alpha_depth(
     num_layers_bragg: int = 4,
     num_layers_defect: int = 2,
 ) -> Any:
-    """Returns the optimization cost fitting the calculated and experimental reflectance spectra of a multilayer with a binary EMA.
+    """Returns the optimization cost fitting the calculated and experimental
+    reflectance spectra of a multilayer with a binary EMA.
 
     - It alternates two different layers.
-    - It also fits an alpha parameter to simulate a variation of the thicknesses of each layer in depth (from surface to bottom) of the multilayer.
+    - It also fits an alpha parameter to simulate a variation of the thicknesses of
+    each layer in depth (from surface to bottom) of the multilayer.
 
     Args:
         params (Tuple, List or ndarray): Thicknesses, fractions and alpha.
@@ -43,10 +46,14 @@ def objective_func_binary_ema_alpha_depth(
         n_void (ndarray): Component 1 of the mixture.
         n_matrix (ndarray): Component 2 of the mixture.
         ref_experimental (ndarray): Experimental reflectance spectrum.
-        ema_binary_func (Callable, optional): Mixing rule to use. Defaults to ema.looyenga.
-        loss_func (Callable): Loss function to calculate the cost. Defaults to mae_loss_function.
-        num_layers_bragg (int, optional): Number of layers in the Bragg mirrors at the side of the defect. Defaults to 4.
-        num_layers_defect (int, optional): Number of layers in the central defect of the multilayer. Defaults to 2.
+        ema_binary_func (Callable, optional): Mixing rule to use. Defaults to ema.
+        looyenga.
+        loss_func (Callable): Loss function to calculate the cost. Defaults to
+        mae_loss_function.
+        num_layers_bragg (int, optional): Number of layers in the Bragg mirrors at
+        the side of the defect. Defaults to 4.
+        num_layers_defect (int, optional): Number of layers in the central defect of
+        the multilayer. Defaults to 2.
 
     Returns:
         float: Cost of the objective function.
@@ -78,31 +85,37 @@ def objective_func_binary_ema_alpha_depth(
     )  # dvec
 
     reflectance = np.zeros(len(beam.wavelength), dtype=np.float)
-    for w in range(len(beam.wavelength)):
+    for index_w, value_w in enumerate(beam.wavelength):
 
         # Build the layer system
-        layers = list()
+        layers = []
 
         # Effective layers
-        ema_layers = ema_binary_func(n_void[w], n_matrix[w], fractions_vec)
+        ema_layers = ema_binary_func(
+            n_void[index_w],
+            n_matrix[index_w],
+            fractions_vec,
+        )
 
-        for d, grad_layer in zip(thicknesses_vec, ema_layers):
+        for thickness, grad_layer in zip(thicknesses_vec, ema_layers):
 
             # Build refractive index of layers per wavelength
-            N = np.concatenate([n_incident[w], grad_layer, n_substrate[w]])
+            n_layers = np.concatenate(
+                [n_incident[index_w], grad_layer, n_substrate[index_w]]
+            )
 
             # Build layer system
             layers.append(
                 tmmo_layer(
-                    index_refraction=N,
-                    thickness=d,
+                    index_refraction=n_layers,
+                    thickness=thickness,
                 )
             )
 
-        reflectance[w] = reflectance_layered(
+        reflectance[index_w] = reflectance_layered(
             layers=layers,
             beam=beam_parameters(
-                wavelength=beam.wavelength[w],
+                wavelength=value_w,
                 angle_inc_degree=beam.angle_inc_degrees,
                 polarisation=beam.polarisation,
                 wavelength_0=beam.wavelength_0,

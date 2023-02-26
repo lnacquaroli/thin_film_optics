@@ -9,11 +9,13 @@ import logging
 
 import numpy as np
 
-from .reflectance import snell_cosine_law
-from .reflectance import phase_shift
-from .reflectance import admittance_p, admittance_s
-
-from src.helpers.utils import _neg_eps_finfo
+from src.helpers.utils import (
+    snell_cosine_law,
+    phase_shift,
+    admittance_p,
+    admittance_s,
+    _neg_eps_finfo,
+)
 
 # from beam_parameters import beam_parameters
 # from layer_information import tmmo_layer
@@ -30,7 +32,8 @@ NEG_EPS = _neg_eps_finfo()
 class TMMOptics:
     """Constructs the structure of the simulation and provides methods for it.
 
-    After building your beam parameters and the created a list of layers, you can pass them to this class constructor.
+    After building your beam parameters and the created a list of layers, you can pass them
+    to this class constructor.
     """
 
     def __init__(self, *, beam: NamedTuple, layers: List[NamedTuple]) -> None:
@@ -106,7 +109,8 @@ class TMMOptics:
         return self
 
     def _transfer_matrix_spectra(self) -> Any:
-        """Computes the reflection and transmission coefficients and spectra with the transfer matrix method.
+        """Computes the reflection and transmission coefficients and spectra with the
+        transfer matrix method.
 
         Returns:
             self: _description_
@@ -142,8 +146,8 @@ class TMMOptics:
                     Mp,
                 )
 
-        self = self._save_spectra_data(adm_p, adm_s, tp, ts, rp, rs)
-        self = self._save_phase_admittance(adm_p, adm_s, delta)
+        self._spectra_data = self._save_spectra_data(adm_p, adm_s, tp, ts, rp, rs)
+        self._phase_admittance = self._save_phase_admittance(adm_p, adm_s, delta)
 
         return self
 
@@ -236,8 +240,8 @@ class TMMOptics:
         # phase shifts for each layer: 2*pi = 6.283185307179586
         delta = phase_shift(
             TWOPI,
-            n,
             self._physical_thickness,
+            n,
             cosphi,
             wavelen,
         ).reshape(-1)
@@ -311,7 +315,8 @@ class TMMOptics:
         adm_p_m: Any,
         Mp: Any,
     ) -> Tuple[Any, Any, Any, Any]:
-        """Computes the reflection and transmission coefficients given the admittance and transfer matrix of the whole structure per wavelenth and angle of incidence.
+        """Computes the reflection and transmission coefficients given the admittance and
+        transfer matrix of the whole structure per wavelenth and angle of incidence.
 
         Args:
             adm_s_0 (complex): admittance of first layer s-wave
@@ -446,7 +451,8 @@ class TMMOptics:
 
         Args:
             self
-            layers_split (int, optional): Number of sub-layers to use for the calculation. Defaults to 10.
+            layers_split (int, optional): Number of sub-layers to use for the calculation.
+            Defaults to 10.
 
         Returns:
             self: Adds:
@@ -503,8 +509,8 @@ class TMMOptics:
                     delta[l, a, :], adm_p[l, a, :], Mp, num_layers + 1
                 )
 
-        self = self._save_emf_data(emfs, emfp)
-        self = self._save_phase_admittance(adm_p, adm_s, delta)
+        self._emf = self._save_emf_data(emfs, emfp)
+        self._phase_admittance = self._save_phase_admittance(adm_p, adm_s, delta)
 
         return self
 
@@ -661,11 +667,13 @@ class TMMOptics:
         return self
 
     def tmm_spectra_emf(self, layers_split: int = 10) -> Any:
-        """Calculates the reflectance and transmittance spectra, and also the electromagnetic field distribution.
+        """Calculates the reflectance and transmittance spectra, and also the
+        electromagnetic field distribution.
 
         Args:
             self
-            layers_split (int, optional): Number of sub-layers to use for the calculation. Defaults to 10.
+            layers_split (int, optional): Number of sub-layers to use for the calculation.
+            Defaults to 10.
 
         Returns:
             self: Adds:
@@ -679,11 +687,11 @@ class TMMOptics:
         """
         if not self.__emf_calculated and not self.__spectra_calculated:
             # Build the sequence of n and d depending on the input
-            self = self._add_gt_thickness()
+            self._gt_thickness = self._add_gt_thickness()
 
             self._num_layers_split = int(layers_split)
 
-            self = self._transfer_matrix_spectra_emf()
+            self._transfer_matrix_spectra_emf()
             self._depth_sublayers = self._layers_depth()
 
             self.__emf_calculated = True
@@ -741,9 +749,9 @@ class TMMOptics:
                     delta[l, a, :], adm_p[l, a, :], Mp, num_layers + 1
                 )
 
-        self = self._save_spectra_data(adm_p, adm_s, tp, ts, rp, rs)
-        self = self._save_phase_admittance(adm_p, adm_s, delta)
-        self = self._save_emf_data(emfs, emfp)
+        self._spectra = self._save_spectra_data(adm_p, adm_s, tp, ts, rp, rs)
+        self._phase_admittance = self._save_phase_admittance(adm_p, adm_s, delta)
+        self._emf = self._save_emf_data(emfs, emfp)
 
         return self
 
@@ -773,8 +781,8 @@ class TMMOptics:
             self._crystal_period = np.sum(d)
             self._wavevector_qz = np.sin(self._beam.angle_inc_radians) * np.pi / 2.0
 
-            self = self._photonic_dispersion(d, n)
-            self = self._omega_h_l(d)
+            self._pbg_dispersion = self._photonic_dispersion(d, n)
+            self._omega_h_l(d)
             self.__pbg_calculated = True
 
             return self
@@ -906,8 +914,6 @@ class TMMOptics:
 
         self._omega_l = num_pi / num_0 * np.arccos(num_1)
 
-        return self
-
     @property
     def beam(self):
         """The beam parameters."""
@@ -921,7 +927,7 @@ class TMMOptics:
     @property
     def spectra(self):
         """The spectra results."""
-        return self._spectra
+        return self._spectra_data
 
     @property
     def pbg_dispersion(self):

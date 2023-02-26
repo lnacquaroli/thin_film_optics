@@ -12,7 +12,7 @@ import numpy as np
 
 from .reflectance import reflectance_fresnel_binary_ema
 from .reflectance import reflectance_layered
-from ..helpers.loss_functions_utils import mae_loss_function, mse_loss_function
+from ..helpers.loss_functions_utils import mae_loss_function  # , mse_loss_function
 from .layer_information import tmmo_layer
 from .beam_parameters import beam_parameters
 from . import effective_medium_models as ema
@@ -32,7 +32,8 @@ def objective_func_binary_ema(
     inverse_ema_func: Callable = ema.inverse_looyenga,
     loss_func: Callable = mae_loss_function,
 ) -> Any:
-    """Returns the mean-abs cost value between the experimental and calculated reflectance spectra.
+    """Returns the mean-abs cost value between the experimental and calculated reflectance
+    spectra.
 
     - Uses a binary mixing rule.
 
@@ -45,8 +46,11 @@ def objective_func_binary_ema(
         n_matrix (ndarray): Component 2 of the mixture.
         ref_experimental (ndarray): Experimental reflectance spectrum.
         ema_binary_func (Callable, optional): Mixing rule to use. Defaults to ema.looyenga.
-        inverse_ema_func (Callable, optional): Inverse of the mixing rule selected. Defaults to ema.inverse_looyenga. Needs to return the physical thickness of the layer.
-        loss_func (Callable): Objective function to calculate the cost. Defaults to mae_loss_function.
+        inverse_ema_func (Callable, optional): Inverse of the mixing rule selected.
+        Defaults to ema.inverse_looyenga. Needs to return the physical thickness of the
+        layer.
+        loss_func (Callable): Objective function to calculate the cost. Defaults to
+        mae_loss_function.
 
     Returns:
         (float): mean-abs difference between calculated and reflectance spectra.
@@ -85,7 +89,8 @@ def _naive_search(
 ) -> Any:
     """Generates the surface solution given the grids input.
 
-    - Computes the objective_func cost comparing the calculated and experimental reflectance spectra.
+    - Computes the objective_func cost comparing the calculated and experimental
+    reflectance spectra.
 
     Args:
         aux1 (ndarray): Grid 1.
@@ -97,7 +102,8 @@ def _naive_search(
         n_matrix (ndarray): Component 2 of the mixture.
         beam (NamedTuple): Beam parameter structure.
         ema_binary_func (Callable, optional): Mixing rule to use.
-        inverse_ema_func (Callable, optional): Inverse of the mixing rule selected. Needs to return the physical thickness of the layer.
+        inverse_ema_func (Callable, optional): Inverse of the mixing rule selected. Needs
+        to return the physical thickness of the layer.
         loss_func (Callable): Estimation of the cost.
 
     Returns:
@@ -141,9 +147,10 @@ def linear_search_binary_ema(
     objective_func: Callable = objective_func_binary_ema,
     loss_func: Callable = mae_loss_function,
     ema_binary_func: Callable = ema.looyenga,
-    inverse_ema_func: Callable = ema.inverse_looyenga,  # EMA to recover the physical thickness
+    inverse_ema_func: Callable = ema.inverse_looyenga,  # EMA to recover the thickness
 ) -> NamedTuple:
-    """Returns a linear search for the input lower and upper bounds, calculating the loss between the experimental and theoretical reflectance, using a binary mixing rule.
+    """Returns a linear search for the input lower and upper bounds, calculating the loss
+    between the experimental and theoretical reflectance, using a binary mixing rule.
 
     Args:
         LB (Tuple or List): Lower bounds of the thickness and fraction.
@@ -155,10 +162,13 @@ def linear_search_binary_ema(
         n_void (ndarray): Component 1 of the mixture.
         n_matrix (ndarray): Component 2 of the mixture.
         num_grid (int, optional): Number of point to generate the grids. Defaults to 40.
-        objective_funct (Callable, optional): Objective function to optimize the loss. Defaults to objective_func_binary_ema.
-        loss_func (Callable, optional): Cost function to estimate the loss. Defaults to mae_loss_function.
+        objective_funct (Callable, optional): Objective function to optimize the loss.
+        Defaults to objective_func_binary_ema.
+        loss_func (Callable, optional): Cost function to estimate the loss. Defaults to
+        mae_loss_function.
         ema_binary_func (Callable, optional): Mixing rule to use.. Defaults to ema.looyenga.
-        inverse_ema_func (Callable, optional): Inverse of the mixing rule selected. Defaults to ema.inverse_looyenga.
+        inverse_ema_func (Callable, optional): Inverse of the mixing rule selected.
+        Defaults to ema.inverse_looyenga.
 
     Returns:
         (NamedTuple): LinearSearchSolSpace:
@@ -239,10 +249,11 @@ def random_search_binary_ema(
     objective_func: Callable = objective_func_binary_ema,
     loss_func: Callable = mae_loss_function,
     ema_binary_func: Callable = ema.looyenga,
-    inverse_ema_func: Callable = ema.inverse_looyenga,  # EMA to recover the physical thickness
+    inverse_ema_func: Callable = ema.inverse_looyenga,  # EMA to recover the thickness
     random_seed: int = 1234,
 ) -> NamedTuple:
-    """Returns a random search for the input lower and upper bounds, calculating the loss between the experimental and theoretical reflectance, using a binary mixing rule.
+    """Returns a random search for the input lower and upper bounds, calculating the loss
+    between the experimental and theoretical reflectance, using a binary mixing rule.
 
     Args:
         LB (Tuple or List): Lower bounds of the thickness and fraction.
@@ -254,11 +265,15 @@ def random_search_binary_ema(
         n_void (ndarray): Component 1 of the mixture.
         n_matrix (ndarray): Component 2 of the mixture.
         num_grid (int, optional): Number of point to generate the grids. Defaults to 40.
-        objective_funct (Callable, optional): Objective function to optimize the loss. Defaults to objective_func_binary_ema.
-        loss_func (Callable, optional): Cost function to estimate the loss. Defaults to mae_loss_function.
+        objective_funct (Callable, optional): Objective function to optimize the loss.
+        Defaults to objective_func_binary_ema.
+        loss_func (Callable, optional): Cost function to estimate the loss. Defaults to
+        mae_loss_function.
         ema_binary_func (Callable, optional): Mixing rule to use.. Defaults to ema.looyenga.
-        inverse_ema_func (Callable, optional): Inverse of the mixing rule selected. Defaults to ema.inverse_looyenga.
-        random_seed (int, optional): Seed for the generation of random search. Defaults to 1234.
+        inverse_ema_func (Callable, optional): Inverse of the mixing rule selected.
+        Defaults to ema.inverse_looyenga.
+        random_seed (int, optional): Seed for the generation of random search. Defaults to
+        1234.
 
     Returns:
         (NamedTuple): RandomSearchSolSpace:
@@ -357,7 +372,8 @@ def linear_porosity(*, params: Any, num_layers: int) -> Tuple[Any, Any]:
         return pvec, dvec
 
     raise ValueError(
-        "the input params should have three values: thickness, fraction and alpha parameters."
+        "the input params should have three values: \n"
+        + "thickness, fraction and alpha parameters."
     )
 
 
@@ -377,10 +393,14 @@ def objective_func_binary_ema_fraction_gradient(
 ) -> Any:
     """Returns the loss function between the ref_experimental and the calculated reflectance spectra.
 
-    - It uses a three layers system in which the single layer between the two outter media is represented by a stack of layers with a fraction that changes in position. This simulates the inhomegeneity of the dissolution process in the anodization of the material. (porosity gradient in depth)
+    - It uses a three layers system in which the single layer between the two outter media
+    is represented by a stack of layers with a fraction that changes in position. This
+    simulates the inhomegeneity of the dissolution process in the anodization of the
+    material. (porosity gradient in depth)
 
     Args:
-        params (Tuple, List): Thickness, fraction and alpha. The alpha represents the weight of the linear variation.
+        params (Tuple, List): Thickness, fraction and alpha. The alpha represents the
+        weight of the linear variation.
         beam (NamedTuple): Beam parameter structure.
         n_incident (ndarray): Incident index of refraction.
         n_substrate (ndarray): Substrate index of refraction.
@@ -388,8 +408,11 @@ def objective_func_binary_ema_fraction_gradient(
         n_matrix (ndarray): Component 2 of the mixture.
         ref_experimental (ndarray): Experimental reflectance spectrum.
         ema_binary_func (Callable, optional): Mixing rule to use. Defaults to ema.looyenga.
-        loss_func (Callable): Loss function to calculate the cost. Defaults to mae_loss_function.
-        gradient_function (Callable): Type of inhomogenity to simulate. Defaults to linear_porosity, that builds a linear variation of the fraction in terms of the thickness.
+        loss_func (Callable): Loss function to calculate the cost. Defaults to
+        mae_loss_function.
+        gradient_function (Callable): Type of inhomogenity to simulate. Defaults to
+        linear_porosity, that builds a linear variation of the fraction in terms of the
+        thickness.
 
     Returns:
         float: Cost of the objective function.
@@ -398,31 +421,33 @@ def objective_func_binary_ema_fraction_gradient(
     pvec, dvec = gradient_function(params=params, num_layers=num_layers)
 
     reflectance = np.zeros(len(beam.wavelength), dtype=np.float)
-    for w in range(len(beam.wavelength)):
+    for index_w, value_w in enumerate(beam.wavelength):
 
         # Build the layer system
-        layers = list()
+        layers = []
 
         # Effective layers
-        ema_layers = ema_binary_func(n_void[w], n_matrix[w], pvec)
+        ema_layers = ema_binary_func(n_void[index_w], n_matrix[index_w], pvec)
 
-        for d, grad_layer in zip(dvec, ema_layers):
+        for thickness, grad_layer in zip(dvec, ema_layers):
 
             # Build refractive index of layers per wavelength
-            N = np.concatenate([n_incident[w], grad_layer, n_substrate[w]])
+            n_layers = np.concatenate(
+                [n_incident[index_w], grad_layer, n_substrate[index_w]]
+            )
 
             # Build layer system
             layers.append(
                 tmmo_layer(
-                    index_refraction=N,
-                    thickness=d,
+                    index_refraction=n_layers,
+                    thickness=thickness,
                 )
             )
 
-        reflectance[w] = reflectance_layered(
+        reflectance[index_w] = reflectance_layered(
             layers=layers,
             beam=beam_parameters(
-                wavelength=beam.wavelength[w],
+                wavelength=value_w,
                 angle_inc_degree=beam.angle_inc_degrees,
                 polarisation=beam.polarisation,
                 wavelength_0=beam.wavelength_0,

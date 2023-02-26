@@ -10,6 +10,7 @@ from src.thin_film_optics import __version__
 
 
 def test_tmm_optics_version():
+    """Check version."""
     assert __version__ == "0.1.0"
 
 
