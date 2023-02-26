@@ -37,7 +37,7 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Lint with pylint
       run: |
-        poetry run python -m pylint *.py
+        poetry run python -m pylint
     - name: Test with pytest
       run: |
         poetry run python -m pytest
