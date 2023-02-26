@@ -1,7 +1,7 @@
 """File to test the version of the package.
 """
 
-from thin_film_optics import __version__
+from src.thin_film_optics import __version__
 
 
 def test_version():
