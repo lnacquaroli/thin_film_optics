@@ -1156,7 +1156,8 @@ def air(*, wavelength: Any) -> Any:
     """Returns the index of refraction of air in complex form. (You should just try 1)
 
     Args:
-        wavelength (ndarray): Wavelength range of interest. (list, float, integer or numpy arange)
+        wavelength (ndarray): Wavelength range of interest. (list, float, integer or numpy
+        arange)
 
     Returns:
         (ndarray): Complex index of refraction of air.
@@ -1171,7 +1172,8 @@ def air(*, wavelength: Any) -> Any:
 
 
 def bk7_glass(*, wavelength: Any) -> Any:
-    """Returns the index of refraction of BK7 glass in complex form. (http://www-swiss.ai.mit.edu/~jaffer/FreeSnell/nk.html)
+    """Returns the index of refraction of BK7 glass in complex form. (http://www-swiss.ai.
+    mit.edu/~jaffer/FreeSnell/nk.html)
 
     Args:
         wavelength (ndarray): Wavelength range of interest. (list, float, integer or numpy
@@ -1312,19 +1314,14 @@ def bk7_glass(*, wavelength: Any) -> Any:
 
 
 def aluminium(*, wavelength: Any) -> Any:
-    """Returns the index of refraction of aluminum in complex form. (http://www-swiss.ai.mit.edu/~jaffer/FreeSnell/nk.html)
+    """Returns the index of refraction of aluminum in complex form.
+    (http://www-swiss.ai.mit.edu/~jaffer/FreeSnell/nk.html)
 
     Args:
-        wavelength (Any): _description_
+        wavelength (list, float, integer or numpy arange, range)
 
     Returns:
-        Any: _description_
-    """
-    """
-
-            n = aluminium(x)
-        x: wavelength (list, float, integer or numpy arange, range)
-        n: complex index of refraction of aluminium
+        complex: array index of refraction of aluminium.
     """
     _x = (
         np.array(
@@ -2597,28 +2594,26 @@ def water(*, wavelength: Any, temperature: Any = 25, kind: str = "cubic") -> Any
 
 
 def ethanol(*, wavelength: Any) -> Any:
-    """Returns the index of refraction of ethylic alcohol in complex form. (http://refractiveindex.info/)
+    """Returns the index of refraction of ethylic alcohol in complex form.
+    (http://refractiveindex.info/)
 
     - The constants used for the calculation are at 22 C.
 
     Args:
-        wavelength (ndarray): Wavelength range of interest [nm]. (list, float, integer or numpy arange, range)
+        wavelength (ndarray): Wavelength range of interest [nm].
+        (float, integer or numpy arange)
             Valid range: 230 nm <= wavelength <= 641 nm.
 
 
     Returns:
         (ndarray): Complex index of refraction of ethanol at 22 C.
     """
-    if isinstance(wavelength, (list, np.arange, np.array, range)):
-        if 230 <= wavelength <= 641:
-            n_0, c_2, c_4 = 1.35265, 0.00306, 0.00002
-            x_ = wavelength * 1e-3  # eqs in micrometers
-            n = n_0 + c_2 / (x_**2) + c_4 / (x_**4)
-            n += 1j * 0.0
+    n_0, c_2, c_4 = 1.35265, 0.00306, 0.00002
+    x_ = wavelength * 1e-3  # eqs in micrometers
+    n = n_0 + c_2 / (x_**2) + c_4 / (x_**4)
+    n += 1j * 0.0
 
-            return n.reshape(-1)
-
-    raise ValueError("the input wavelength is out of bounds.")
+    return n.reshape(-1)
 
 
 def isopropanol(*, wavelength: Any) -> Any:
@@ -2636,20 +2631,11 @@ def isopropanol(*, wavelength: Any) -> Any:
     Returns:
         (ndarray): Complex index of refraction of isopropanol at 22 C.
     """
-    if isinstance(wavelength, (list, np.arange, np.array, range)):
-        if 230 <= wavelength <= 641:
-            n_0, c_2, c_4, c_6 = 1.36485, 4.29404081e-3, 6.4823380e-5, 3.41833e-6
-            n = (
-                n_0
-                + c_2 / wavelength ** (2)
-                - c_4 / wavelength ** (4)
-                + c_6 / wavelength**6
-            )
-            n += 1j * 0.0
+    n_0, c_2, c_4, c_6 = 1.36485, 4.29404081e-3, 6.4823380e-5, 3.41833e-6
+    n = n_0 + c_2 / wavelength ** (2) - c_4 / wavelength ** (4) + c_6 / wavelength**6
+    n += 1j * 0.0
 
-            return n.reshape(-1)
-
-    raise ValueError("the input wavelength is out of bounds.")
+    return n.reshape(-1)
 
 
 def methanol(*, wavelength: Any) -> Any:
@@ -2667,20 +2653,11 @@ def methanol(*, wavelength: Any) -> Any:
     Returns:
         (ndarray): Complex index of refraction of methanol at 22 C.
     """
-    if isinstance(wavelength, (list, np.arange, np.array, range)):
-        if 230 <= wavelength <= 641:
-            n_0, c_2, c_4, c_6 = 1.3195, 3.05364419e-3, 3.41636393011e-5, 2.62128e-6
-            n = (
-                n_0
-                + c_2 / wavelength ** (2)
-                - c_4 / wavelength ** (4)
-                + c_6 / wavelength**6
-            )
-            n += 1j * 0.0
+    n_0, c_2, c_4, c_6 = 1.3195, 3.05364419e-3, 3.41636393011e-5, 2.62128e-6
+    n = n_0 + c_2 / wavelength ** (2) - c_4 / wavelength ** (4) + c_6 / wavelength**6
+    n += 1j * 0.0
 
-            return n.reshape(-1)
-
-    raise ValueError("the input wavelength is out of bounds.")
+    return n.reshape(-1)
 
 
 def zno(*, wavelength: Any) -> Any:
@@ -2706,25 +2683,21 @@ def zno(*, wavelength: Any) -> Any:
 
         return n.reshape(-1)
 
-    if isinstance(wavelength, (list, np.arange, np.array, range)):
-        if 230 <= wavelength <= 641:
-            xsq = (wavelength * 1e6) ** 2
-            _no = _zno_index(
-                c_1=2.81418,
-                c_2=0.87968,
-                c_3=0.3042,
-                c_4=0.00711,
-            )
-            _ne = _zno_index(
-                c_1=2.80333,
-                c_2=0.94470,
-                c_3=0.3004,
-                c_4=0.00714,
-            )
+    xsq = (wavelength * 1e6) ** 2
+    _no = _zno_index(
+        c_1=2.81418,
+        c_2=0.87968,
+        c_3=0.3042,
+        c_4=0.00711,
+    )
+    _ne = _zno_index(
+        c_1=2.80333,
+        c_2=0.94470,
+        c_3=0.3004,
+        c_4=0.00714,
+    )
 
-            return _ne, _no
-
-    raise ValueError("the input wavelength is out of bounds.")
+    return _ne, _no
 
 
 def zno_thinfilm(*, wavelength: Any) -> Any:
@@ -7444,22 +7417,18 @@ def al2o3(*, wavelength: Any) -> Any:
     Returns:
         (ndarray): Complex index of refraction of Al2O3.
     """
-    if isinstance(wavelength, (list, np.arange, np.array, range)):
-        if 200 <= wavelength <= 5000:
-            _x = wavelength * 1 - 3
-            c_1, c_2, c_3 = 1.4313493, 0.65054713, 5.3414021
-            b_1, b_2, b_3 = 0.0726631, 0.1193242, 18.028251
-            n = np.sqrt(
-                1.0
-                + c_1 / (1.0 - (b_1 / _x) ** 2)
-                + c_2 / (1.0 - (b_2 / _x) ** 2)
-                + c_3 / (1.0 - (b_3 / _x) ** 2)
-            )
-            n += 1j * 0.0
+    _x = wavelength * 1 - 3
+    c_1, c_2, c_3 = 1.4313493, 0.65054713, 5.3414021
+    b_1, b_2, b_3 = 0.0726631, 0.1193242, 18.028251
+    n = np.sqrt(
+        1.0
+        + c_1 / (1.0 - (b_1 / _x) ** 2)
+        + c_2 / (1.0 - (b_2 / _x) ** 2)
+        + c_3 / (1.0 - (b_3 / _x) ** 2)
+    )
+    n += 1j * 0.0
 
-            return n.reshape(-1)
-
-    raise ValueError("the input wavelength_oi is out of bounds.")
+    return n.reshape(-1)
 
 
 def asih(*, wavelength: Any) -> Any:

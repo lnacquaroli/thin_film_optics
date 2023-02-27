@@ -48,7 +48,21 @@ class TMMOptics:
         self.__pbg_calculated = False
         self.__emf_calculated = False
         self.__spectra_calculated = False
-        self.__adm_phase_calculated = False
+        # self.__adm_phase_calculated = False
+        self._n_wavelength_0 = None
+        self._physical_thickness = None
+        self._spectra = None
+        self._phase_admittance = None
+        self._num_layers_split = None
+        self._depth_sublayers = None
+        self._emf = None
+        self._crystal_period = None
+        self._wavevector_qz = None
+        self._pbg_dispersion = None
+        self._omega = None
+        self._bloch = None
+        self._omega_h = None
+        self._omega_l = None
 
     def tmm_spectra(self) -> Any:
         """Calculates the reflection and transmission spectra.
@@ -65,10 +79,10 @@ class TMMOptics:
         """
         if not self.__spectra_calculated:
             # Build the sequence of n and d depending on the input
-            self = self._add_gt_thickness()
-            self = self._transfer_matrix_spectra()
+            self._add_gt_thickness()
+            self._transfer_matrix_spectra()
             self.__spectra_calculated = True
-            self.__adm_phase_calculated = True
+            # self.__adm_phase_calculated = True
 
             return self
 
@@ -146,7 +160,7 @@ class TMMOptics:
                     Mp,
                 )
 
-        self._spectra_data = self._save_spectra_data(adm_p, adm_s, tp, ts, rp, rs)
+        self._spectra = self._save_spectra_data(adm_p, adm_s, tp, ts, rp, rs)
         self._phase_admittance = self._save_phase_admittance(adm_p, adm_s, delta)
 
         return self
@@ -260,7 +274,7 @@ class TMMOptics:
             num_layers (int): number of layers
 
         Returns:
-            cosphi, n: complex placeholders for the index of refraction and angle of incidence.
+            cosphi, n: placeholders for the index of refraction and angle of incidence.
         """
         cosphi = np.zeros(num_layers + 1, dtype=complex)
         n = cosphi.copy()
@@ -462,13 +476,13 @@ class TMMOptics:
         """
         if not self.__emf_calculated:
             # Build the sequence of n and d depending on the input
-            self = self._add_gt_thickness()
+            self._add_gt_thickness()
 
             self._num_layers_split = int(layers_split)
-            self = self._transfer_matrix_emf()
+            self._transfer_matrix_emf()
             self._depth_sublayers = self._layers_depth()
             self.__emf_calculated = True
-            self.__adm_phase_calculated = True
+            # self.__adm_phase_calculated = True
 
             return self
 
@@ -687,7 +701,7 @@ class TMMOptics:
         """
         if not self.__emf_calculated and not self.__spectra_calculated:
             # Build the sequence of n and d depending on the input
-            self._gt_thickness = self._add_gt_thickness()
+            self._add_gt_thickness()
 
             self._num_layers_split = int(layers_split)
 
@@ -696,14 +710,15 @@ class TMMOptics:
 
             self.__emf_calculated = True
             self.__spectra_calculated = True
-            self.__adm_phase_calculated = True
+            # self.__adm_phase_calculated = True
 
             return self
 
         return logger.info("you already calculated the specta or the EMF.")
 
     def _transfer_matrix_spectra_emf(self) -> Any:
-        """Computes the reflection and transmission coefficients and spectra, and the EMF with the transfer matrix method.
+        """Computes the reflection and transmission coefficients and spectra,
+        and the EMF with the transfer matrix method.
 
         Args:
             self
@@ -838,7 +853,8 @@ class TMMOptics:
         fsr, fsi = np.real(factor_s), np.imag(factor_s)
         fpr, fpi = np.real(factor_p), np.imag(factor_p)
 
-        # Bloch wavevectors: I split into real and imag because the arccos seems to have a problem with complexes. It is better but not solved this way.
+        # Bloch wavevectors: I split into real and imag because the arccos seems to have
+        # a problem with complexes. It is better but not solved this way.
         const_0 = d[0] * n[0] * cosphi_0
         const_1 = d[1] * n[1] * cosphi_1
         for a in range(len(cosphi_1)):
@@ -854,7 +870,7 @@ class TMMOptics:
         ks = ksr + ksi * 1j
         kp, ks = _remove_nans(kp), _remove_nans(ks)
 
-        self = self._save_bloch_data(kp, ks)
+        self._save_bloch_data(kp, ks)
 
         return self
 

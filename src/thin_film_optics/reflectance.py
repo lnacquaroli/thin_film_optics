@@ -4,10 +4,8 @@
 from typing import Any, NamedTuple, Tuple, List, Callable
 import numpy as np
 
-from . import effective_medium_models as ema
-
 from src.helpers.utils import snell_cosine_law, phase_shift
-
+from . import effective_medium_models as ema
 from .transfer_matrix_method import TMMOptics
 
 
@@ -137,21 +135,31 @@ def normalize_experimental_reflectance(
     ref_theory: Any,
     beam: Any,
 ) -> Any:
-    """Normalize the reflectance spectrum dividing by the reference of the material and multiplying by the theoretical spectrum of the material.
+    """Normalize the reflectance spectrum dividing by the reference of the material and
+    multiplying by the theoretical spectrum of the material.
 
     Args:
-        ref_spectrum (ndarray, 2): experimental reflectance. First column wavelength, second column the reflectance spectrum.
-        ref_reference (ndarray, 2): reference reflectance. First column wavelength, second column the reflectance spectrum.
-        ref_theory (ndarray, 2): theoretical reflectance. First column wavelength, second column the reflectance spectrum.
+        ref_spectrum (ndarray, 2): experimental reflectance. First column wavelength,
+        second column the reflectance spectrum.
+        ref_reference (ndarray, 2): reference reflectance. First column wavelength, second
+        column the reflectance spectrum.
+        ref_theory (ndarray, 2): theoretical reflectance. First column wavelength, second
+        column the reflectance spectrum.
         beam (namedtuple): beam parameters.
 
     Returns:
-        ndarray: normalized experimental reflectance spectum interpolated for each beam.wavelength value.
+        ndarray: normalized experimental reflectance spectum interpolated for each beam.
+        wavelength value.
     """
+    if len(ref_theory) != len(beam.wavelength):
+        raise IndexError(
+            "length of reference spectrum does not match wavelength array."
+        )
+
     itp_spectrum = np.interp(beam.waelength, ref_spectrum[:, 0], ref_spectrum[:, 1])
     itp_reference = np.interp(beam.waelength, ref_reference[:, 0], ref_reference[:, 1])
-    if len(ref_theory) == len(beam.wavelength):
-        return itp_spectrum / itp_reference * ref_theory
+
+    return itp_spectrum / itp_reference * ref_theory
 
 
 def reflectance_layered(

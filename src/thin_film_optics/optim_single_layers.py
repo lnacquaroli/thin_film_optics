@@ -16,7 +16,8 @@ from ..helpers.loss_functions_utils import mae_loss_function  # , mse_loss_funct
 from .layer_information import tmmo_layer
 from .beam_parameters import beam_parameters
 from . import effective_medium_models as ema
-from . import refractive_index_database as ridb
+
+# from . import refractive_index_database as ridb
 
 
 def objective_func_binary_ema(
@@ -391,7 +392,8 @@ def objective_func_binary_ema_fraction_gradient(
     loss_func: Callable = mae_loss_function,
     gradient_function: Callable = linear_porosity,
 ) -> Any:
-    """Returns the loss function between the ref_experimental and the calculated reflectance spectra.
+    """Returns the loss function between the ref_experimental and the calculated
+    reflectance spectra.
 
     - It uses a three layers system in which the single layer between the two outter media
     is represented by a stack of layers with a fraction that changes in position. This

@@ -140,7 +140,8 @@ def looyenga(
     refractive_index_2: Any,
     fraction_1: Any,
 ) -> Any:
-    """Effective index of refraction of a binary mix using the Looyenga-Landau-Lifshitz model.
+    """Effective index of refraction of a binary mix using the Looyenga-Landau-Lifshitz
+    model.
 
     Args:
         refractive_index_1 (ndarray[complex]) : Index of refraction of the component 1
@@ -162,7 +163,8 @@ def looyenga(
 
 
 def inverse_looyenga(fraction: Any, effective_optical_thickness: Any) -> Any:
-    """Returns the physical thickness for a given fraction and optical thickness using the Looyenga-Landau-Lifshitz model with two components.
+    """Returns the physical thickness for a given fraction and optical thickness using the
+    Looyenga-Landau-Lifshitz model with two components.
 
     Args:
         fraction (Any): fraction of the mixture.
