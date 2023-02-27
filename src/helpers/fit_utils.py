@@ -4,7 +4,7 @@ It needs the effective_index_models.py and refractive_index_db.py files in the p
 
 from typing import Any, Callable
 
-import numpy as np
+# import numpy as np
 
 # from .utils import find_closest
 from .loss_functions_utils import mae_loss_function  # , mse_loss_function
