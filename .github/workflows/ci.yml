@@ -37,7 +37,7 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Lint with pylint
       run: |
-        poetry run python -m pylint lint.py --path ./src --threshold 2
+        poetry run python lint.py --path ./src --threshold 2
     - name: Test with pytest
       run: |
         poetry run python -m pytest
