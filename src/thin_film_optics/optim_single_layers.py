@@ -10,9 +10,9 @@ import numpy as np
 
 # import scipy.interpolate
 
+from src.helpers.loss_functions_utils import mae_loss_function  # , mse_loss_function
 from .reflectance import reflectance_fresnel_binary_ema
 from .reflectance import reflectance_layered
-from ..helpers.loss_functions_utils import mae_loss_function  # , mse_loss_function
 from .layer_information import tmmo_layer
 from .beam_parameters import beam_parameters
 from . import effective_medium_models as ema

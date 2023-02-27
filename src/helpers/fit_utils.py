@@ -6,10 +6,11 @@ from typing import Any, Callable
 
 # import numpy as np
 
-# from .utils import find_closest
+from src.thin_film_optics.effective_medium_models import looyenga, inverse_looyenga
+from src.thin_film_optics.reflectance import reflectance_fresnel_binary_ema
 from .loss_functions_utils import mae_loss_function  # , mse_loss_function
-from ..thin_film_optics.effective_medium_models import looyenga, inverse_looyenga
-from ..thin_film_optics.reflectance import reflectance_fresnel_binary_ema
+
+# from .utils import find_closest
 
 
 def loss_fresnel_ema_binary(

@@ -9,7 +9,7 @@ from typing import Any, NamedTuple, Callable
 
 import numpy as np
 
-from ..helpers.loss_functions_utils import mae_loss_function  # , mse_loss_function
+from src.helpers.loss_functions_utils import mae_loss_function  # , mse_loss_function
 
 from .layer_information import tmmo_layer
 from .beam_parameters import beam_parameters
