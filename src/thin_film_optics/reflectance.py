@@ -178,8 +178,9 @@ def reflectance_layered(
     """
     tmm_optics = TMMOptics(beam=beam, layers=layers)
     tmm_optics.tmm_spectra()
+    spectra = tmm_optics.spectra
     return (
-        tmm_optics._spectra.reflectance_p,
-        tmm_optics._spectra.reflectance_s,
-        tmm_optics._spectra.reflectance,
+        spectra.reflectance_p,
+        spectra.reflectance_s,
+        spectra.reflectance,
     )

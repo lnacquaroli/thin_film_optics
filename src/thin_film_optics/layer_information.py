@@ -9,7 +9,7 @@ from collections import namedtuple
 
 import numpy as np
 
-from helpers.utils import _neg_eps_finfo
+from src.helpers.utils import _neg_eps_finfo
 
 
 # Constants

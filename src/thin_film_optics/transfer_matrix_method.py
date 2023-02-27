@@ -857,10 +857,10 @@ class TMMOptics:
         # a problem with complexes. It is better but not solved this way.
         const_0 = d[0] * n[0] * cosphi_0
         const_1 = d[1] * n[1] * cosphi_1
-        for a in range(len(cosphi_1)):
-            for b in range(len(self._omega)):
-                a0 = const_0[a] * self._omega[b]
-                a1 = const_1[a] * self._omega[b]
+        for a, _ in enumerate(cosphi_1):
+            for b, omega in enumerate(self._omega):
+                a0 = const_0[a] * omega
+                a1 = const_1[a] * omega
                 kpr[b, a] = _bloch_wavevector(a0, a1, fpr[a])
                 ksr[b, a] = _bloch_wavevector(a0, a1, fsr[a])
                 kpi[b, a] = _bloch_wavevector(a0, a1, fpi[a])
@@ -943,7 +943,7 @@ class TMMOptics:
     @property
     def spectra(self):
         """The spectra results."""
-        return self._spectra_data
+        return self._spectra
 
     @property
     def pbg_dispersion(self):
@@ -955,7 +955,7 @@ class TMMOptics:
         """The EMF structure."""
         return self._emf
 
-    @property
-    def misc(self):
-        """The phase shift, delta, and others results."""
-        return self._misc
+    # @property
+    # def misc(self):
+    #     """The phase shift, delta, and others results."""
+    #     return self._misc
