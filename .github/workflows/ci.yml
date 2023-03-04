@@ -37,8 +37,9 @@ jobs:
           # if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Lint with pylint
         run: |
-          if [matrix.os == "windows-latest"]; then
-            git config --global core.autocrlf=true
+          if: runner.os == 'Windows'
+            git config --global core.autocrlf false
+            git config --global core.eol lf
           poetry run python -m pylint $(git ls-files '*.py')
       - name: Test with pytest
         run: |
