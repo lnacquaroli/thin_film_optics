@@ -36,8 +36,8 @@ jobs:
           poetry install
           # if [[ -f requirements.txt ]]; then pip install -r requirements.txt; fi
       - name: Check LF for windows
+        if: ${{ matrix.os == 'windows-latest' }}
         run: |
-          if: ${{ matrix.os == 'windows-latest' }}
             git config --global core.autocrlf false
             git config --global core.eol lf
       - name: Lint with pylint
