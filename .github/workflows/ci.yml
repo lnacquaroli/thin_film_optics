@@ -1,5 +1,5 @@
 
-name: Thin-Film Optics python package
+name: Thin-Film Optics
 
 on:
   push:
